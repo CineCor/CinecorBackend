@@ -7,7 +7,11 @@
 
 # User-specific stuff:
 .idea/
+.gradle/
+build/
 serviceAccountKey.json
+cinecorbackend.properties
+cinecorbackend.xml
 
 ## File-based project format:
 *.iws
