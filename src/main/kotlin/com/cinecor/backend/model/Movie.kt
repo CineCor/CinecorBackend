@@ -19,4 +19,20 @@ data class Movie(
 
     enum class Images {POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
     enum class Colors {MAIN, TITLE }
+
+    fun copy(movie: Movie?) {
+        this.colors = movie?.colors
+        this.images = movie?.images
+        this.genres = movie?.genres
+        this.rawDescription = movie?.rawDescription
+        this.imdb = movie?.imdb
+        this.trailer = movie?.trailer
+        this.duration = movie?.duration
+        this.releaseDate = movie?.releaseDate
+        this.overview = movie?.overview
+        this.director = movie?.director
+        this.url = movie?.url
+        this.rating = movie?.rating
+        this.title = movie?.title
+    }
 }

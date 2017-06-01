@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 
 class FirebaseManager {
 
-    private var firebaseDatabase: FirebaseDatabase
+    private val firebaseDatabase: FirebaseDatabase
 
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
