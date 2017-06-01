@@ -2,16 +2,12 @@ package com.cinecor.backend
 
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
+import com.cinecor.backend.utils.FirebaseManager
 import com.google.common.base.CharMatcher
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
-import com.google.firebase.auth.FirebaseCredentials
-import com.google.firebase.database.FirebaseDatabase
 import info.movito.themoviedbapi.TmdbApi
 import info.movito.themoviedbapi.TmdbMovies
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import java.io.IOException
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -21,37 +17,25 @@ import java.util.*
 
 object Main {
 
+    val NOW = ZonedDateTime.now(ZoneId.of("Europe/Madrid")).withSecond(0).withNano(0)
     private val PARSE_TIMEOUT = 60000
     private val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
     private val TMDB_LANGUAGE = "es-ES"
-    private val NOW = ZonedDateTime.now(ZoneId.of("Europe/Madrid")).withSecond(0).withNano(0)
 
     private val tmdbApi = TmdbApi(System.getenv("TMDB_API_KEY"))
-    private var firebaseDatabase: FirebaseDatabase? = null
+
+    private lateinit var firebaseManager: FirebaseManager
     private val cinemas = ArrayList<Cinema>()
 
     @JvmStatic fun main(args: Array<String>) {
-        initializeFirebase()
+        println("Initializing Firebase...")
+        firebaseManager = FirebaseManager()
+
         parseData()
         fillMovieData()
-        uploadToFirebase()
-    }
 
-    private fun initializeFirebase() {
-        println("Initializing Firebase...")
-
-        try {
-            FirebaseApp.initializeApp(FirebaseOptions.Builder()
-                    .setCredential(FirebaseCredentials.fromCertificate(System.getenv("FIREBASE_KEY").byteInputStream()))
-                    .setDatabaseAuthVariableOverride(hashMapOf<String, Any>(Pair("uid", System.getenv("FIREBASE_UID"))))
-                    .setDatabaseUrl(System.getenv("FIREBASE_DB"))
-                    .build())
-
-            firebaseDatabase = FirebaseDatabase.getInstance()
-        } catch (e: IOException) {
-            println("ERROR: invalid service account credentials: " + e.message)
-            System.exit(1)
-        }
+        println("Writing to Firebase...")
+        firebaseManager.uploadCinemas(cinemas)
     }
 
     private fun parseData() {
@@ -240,26 +224,6 @@ object Main {
         } catch (e: Exception) {
             e.printStackTrace()
             System.exit(0)
-        }
-
-    }
-
-    private fun uploadToFirebase() {
-        println("Writing to Firebase...")
-
-        val timeStamp = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(NOW)
-        val data = HashMap<String, Any>()
-        data.put("cinemas", cinemas)
-        data.put("timestamp", timeStamp)
-
-        firebaseDatabase!!.reference.setValue(data) { databaseError, databaseReference ->
-            if (databaseError != null) {
-                println("Data could not be saved " + databaseError.message)
-                System.exit(1)
-            } else {
-                println("Data saved successfully.")
-                System.exit(0)
-            }
         }
     }
 }
