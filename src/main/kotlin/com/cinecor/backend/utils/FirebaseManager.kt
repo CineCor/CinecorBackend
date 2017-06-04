@@ -23,9 +23,9 @@ class FirebaseManager {
     }
 
     fun uploadCinemas(cinemas: List<Cinema>) {
-        val data = hashMapOf<String, Any>(
+        val data = mapOf<String, Any>(
                 Pair("cinemas", cinemas),
-                Pair("last_update", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(Main.NOW))
+                Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(Main.NOW))
         )
 
         firebaseDatabase.reference.setValue(data) { databaseError, _ ->

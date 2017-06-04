@@ -14,7 +14,6 @@ object Parser {
     private val PARSE_TIMEOUT = 60000
     private val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-
     fun getCinemas(): List<Cinema>? {
         try {
             val cinemas = ArrayList<Cinema>()
@@ -98,6 +97,6 @@ object Parser {
                 .filter { it.length >= 4 }
                 .map { LocalTime.parse(it.substring(0, 4), DateTimeFormatter.ofPattern("HHmm")) }
                 .map { Main.NOW.withHour(it.hour).withMinute(it.minute) }
-                .map { DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(it) }
+                .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
 }
