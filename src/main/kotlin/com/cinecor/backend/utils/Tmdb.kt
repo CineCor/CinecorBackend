@@ -45,53 +45,28 @@ object Tmdb {
     }
 
     private fun fillDataWithExternalApi(movie: Movie): Boolean {
-        var movieResults = tmdbApi.search.searchMovie(movie.title, Main.NOW.year, TMDB_LANGUAGE, true, 0)
+        var movieResults = searchMovie(movie.title, Main.NOW.year)
         if (movieResults.totalResults == 0) {
-            movieResults = tmdbApi.search.searchMovie(movie.title, null, TMDB_LANGUAGE, true, 0)
+            movieResults = searchMovie(movie.title, Main.NOW.year - 1)
+        }
+        if (movieResults.totalResults == 0) {
+            movieResults = searchMovie(movie.title, 0)
         }
         if (movieResults.totalResults != 0) {
-            val movieApi = tmdbApi.movies.getMovie(movieResults.results[0].id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)
-            if (movieApi != null) {
-                if (!StringUtils.isEmpty(movieApi.title)) {
-                    movie.title = movieApi.title
-                }
-                if (!StringUtils.isEmpty(movieApi.imdbID)) {
-                    movie.imdb = "http://www.imdb.com/title/" + movieApi.imdbID
-                }
-                if (movieApi.voteAverage != 0.0f) {
-                    movie.rating = movieApi.voteAverage
-                }
-                if (!StringUtils.isEmpty(movieApi.overview)) {
-                    movie.overview = movieApi.overview
-                }
-                if (!StringUtils.isEmpty(movieApi.releaseDate)) {
-                    movie.releaseDate = movieApi.releaseDate
-                }
-                if (movieApi.runtime != 0) {
-                    movie.duration = movieApi.runtime
-                }
-                if (movieApi.genres != null && !movieApi.genres.isEmpty()) {
-                    movie.genres = movieApi.genres.map { it.name }
-                }
-                if (movieApi.videos != null && !movieApi.videos.isEmpty()) {
-                    val video = movieApi.videos[0]
-                    if ("Trailer" == video.type && "YouTube" == video.site) {
-                        movie.trailer = "https://www.youtube.com/watch?v=" + video.key
-                    }
-                }
-                if (!StringUtils.isEmpty(movieApi.posterPath)) {
-                    movie.images?.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780" + movieApi.posterPath)
-                    movie.images?.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92" + movieApi.posterPath)
-                }
-                if (!StringUtils.isEmpty(movieApi.backdropPath)) {
-                    movie.images?.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780" + movieApi.backdropPath)
-                    movie.images?.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300" + movieApi.backdropPath)
-                }
+            var movieDb = movieResults.results[0]
+            if (movieDb.overview.isNullOrEmpty() && movieResults.totalResults > 1) {
+                movieDb = movieResults.results[1]
+            }
+
+            tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos).let {
+                movie.copy(it)
                 return true
             }
         }
         return false
     }
+
+    private fun searchMovie(title: String?, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
 
     private fun fillColors(movie: Movie) {
         val images = movie.images

@@ -8,6 +8,7 @@ import org.jsoup.Jsoup
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.ArrayList
 
 object Parser {
 
@@ -15,6 +16,12 @@ object Parser {
     private val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
     fun getCinemas(): List<Cinema>? {
+        val cinemas: ArrayList<Cinema>? = parseWeb()
+        cinemas?.sortByDescending { it.id }
+        return cinemas
+    }
+
+    private fun parseWeb(): ArrayList<Cinema>? {
         try {
             val cinemas = ArrayList<Cinema>()
             val document = Jsoup.connect(System.getenv("PARSE_URL"))
@@ -50,8 +57,6 @@ object Parser {
                     cinema.movies = movies
                     cinemas.add(cinema)
                 }
-
-                cinemas.sortByDescending { it.id }
 
                 return cinemas
             } else {
