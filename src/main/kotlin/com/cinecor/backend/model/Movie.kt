@@ -46,18 +46,24 @@ data class Movie(
         movieApi.releaseDate.let { this.releaseDate = it }
         movieApi.runtime.let { this.duration = it }
         movieApi.genres.let { this.genres = it.map { it.name } }
-        movieApi.videos.let {
-            it.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let { key ->
-                this.trailer = "https://www.youtube.com/watch?v=" + key
+        movieApi.videos.let { videos ->
+            if (videos.isNotEmpty()) {
+                videos.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let {
+                    this.trailer = "https://www.youtube.com/watch?v=" + it
+                }
             }
         }
         movieApi.posterPath.let { path ->
-            this.images?.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780" + path)
-            this.images?.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92" + path)
+            if (path.isNotBlank()) {
+                this.images?.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780" + path)
+                this.images?.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92" + path)
+            }
         }
-        movieApi.backdropPath.let { path ->
-            this.images?.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780" + path)
-            this.images?.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300" + path)
+        movieApi.posterPath.let { path ->
+            if (path.isNotBlank()) {
+                this.images?.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780" + path)
+                this.images?.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300" + path)
+            }
         }
     }
 }
