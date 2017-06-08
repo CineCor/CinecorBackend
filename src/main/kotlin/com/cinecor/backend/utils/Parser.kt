@@ -39,23 +39,28 @@ object Parser {
                     val movies = ArrayList<Movie>()
                     val moviesElements = cinemaElement.select("div.pildora")
                     moviesElements.forEach { movieElement ->
-                        val movieId = Integer.parseInt(movieElement.select("a").first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
+                        val movieLink = movieElement.select("a")
+                        if (movieLink.isNotEmpty()) {
+                            val movie = Movie()
+                            val movieId = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
 
-                        val movie = Movie()
-                        movie.hours = getHoursDateFromText(movieElement.select("h5").text())
-                        movie.title = movieElement.select("a").first().text()
-                        movie.images = object : HashMap<String, String>() {
-                            init {
-                                put(Movie.Images.POSTER.name, System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpeg")
+                            movie.id = movieId
+                            movie.hours = getHoursDateFromText(movieElement.select("h5").text())
+                            movie.title = movieLink.first().text()
+                            movie.images = object : HashMap<String, String>() {
+                                init {
+                                    put(Movie.Images.POSTER.name, System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpeg")
+                                }
                             }
-                        }
-                        movie.url = movieElement.select("a").first().attr("abs:href")
-                        movie.id = movieId
+                            movie.url = movieLink.first().attr("abs:href")
 
-                        movies.add(movie)
+                            movies.add(movie)
+                        }
                     }
-                    cinema.movies = movies
-                    cinemas.add(cinema)
+                    if (movies.isNotEmpty()) {
+                        cinema.movies = movies
+                        cinemas.add(cinema)
+                    }
                 }
 
                 return cinemas
