@@ -106,7 +106,7 @@ object Parser {
                 .map { CharMatcher.digit().retainFrom(it) }
                 .filter { it.length >= 4 }
                 .map { LocalTime.parse(it.substring(0, 4), DateTimeFormatter.ofPattern("HHmm")) }
-                .map { Main.NOW.withHour(it.hour).withMinute(it.minute) }
+                .map { Main.NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
                 .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
 }
