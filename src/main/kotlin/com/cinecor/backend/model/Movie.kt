@@ -53,13 +53,13 @@ data class Movie(
                 }
             }
         }
-        movieApi.posterPath.let { path ->
+        movieApi.posterPath?.let { path ->
             if (path.isNotBlank()) {
                 this.images?.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780" + path)
                 this.images?.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92" + path)
             }
         }
-        movieApi.posterPath.let { path ->
+        movieApi.backdropPath?.let { path ->
             if (path.isNotBlank()) {
                 this.images?.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780" + path)
                 this.images?.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300" + path)
