@@ -7,5 +7,4 @@ data class Cinema(var id: Int? = 0,
                   var rooms: String? = null,
                   var phone: String? = null,
                   var web: String? = null,
-                  var movies: List<Movie>? = null) {
-}
+                  var movies: List<Movie>? = ArrayList())

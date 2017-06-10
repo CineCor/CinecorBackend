@@ -58,7 +58,7 @@ object Tmdb {
                 movieDb = movieResults.results[1]
             }
 
-            tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos).let {
+            tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)?.let {
                 movie.copy(it)
                 return true
             }

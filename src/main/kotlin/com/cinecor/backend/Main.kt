@@ -16,14 +16,12 @@ object Main {
         val firebaseManager = FirebaseManager()
 
         println("Parsing Data...")
-        var cinemas = Parser.getCinemas()
+        val cinemas = Parser.getCinemas()
 
         cinemas?.let {
             println("Filling Movie Data...")
             Tmdb.fillMovieData(it)
-        }
 
-        cinemas?.let {
             println("Writing to Firebase...")
             firebaseManager.uploadCinemas(it)
         }
