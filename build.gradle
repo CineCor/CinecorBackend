@@ -42,7 +42,7 @@ shadowJar {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-    compile "com.google.firebase:firebase-admin:5.0.0"
+    compile "com.google.firebase:firebase-admin:5.1.0"
     compile "org.jsoup:jsoup:1.10.2"
     compile "info.movito:themoviedbapi:1.5"
     compile "com.loyalsound:iris:1.1"
