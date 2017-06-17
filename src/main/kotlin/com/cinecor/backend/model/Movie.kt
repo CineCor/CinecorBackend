@@ -1,5 +1,6 @@
 package com.cinecor.backend.model
 
+import com.google.firebase.database.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
 data class Movie(var id: Int = 0,
@@ -13,6 +14,7 @@ data class Movie(var id: Int = 0,
                  var duration: Int = 0,
                  var releaseDate: String = "",
                  var overview: String = "",
+                 @Exclude var url: String = "",
                  var rating: Float = 0.0f,
                  var title: String = "") {
 
@@ -29,6 +31,7 @@ data class Movie(var id: Int = 0,
         movie.duration.let { this.duration = it }
         movie.releaseDate.let { this.releaseDate = it }
         movie.overview.let { this.overview = it }
+        movie.url.let { this.url = it }
         movie.rating.let { this.rating = it }
         movie.title.let { this.title = it }
     }
