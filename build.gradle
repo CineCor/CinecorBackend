@@ -2,7 +2,7 @@ group 'com.cinecor.backend'
 version '1.0'
 
 buildscript {
-    ext.kotlin_version = '1.1.2-2'
+    kotlin_version = '1.1.2-5'
 
     repositories {
         mavenCentral()
@@ -42,8 +42,8 @@ shadowJar {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-    compile "com.google.firebase:firebase-admin:5.1.0"
-    compile "org.jsoup:jsoup:1.10.2"
+    compile "com.google.firebase:firebase-admin:5.2.0"
+    compile "org.jsoup:jsoup:1.10.3"
     compile "info.movito:themoviedbapi:1.5"
     compile "com.loyalsound:iris:1.1"
 }

@@ -16,7 +16,7 @@ object Parser {
     private val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
     fun getCinemas(): List<Cinema>? {
-        val cinemas: ArrayList<Cinema>? = parseWeb()
+        val cinemas = parseWeb()
         cinemas?.sortByDescending { it.id }
         return cinemas
     }
