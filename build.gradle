@@ -2,7 +2,7 @@ group 'com.cinecor.backend'
 version '1.0'
 
 buildscript {
-    kotlin_version = '1.1.2-5'
+    ext.kotlin_version = '1.1.2-5'
 
     repositories {
         mavenCentral()

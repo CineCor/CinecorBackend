@@ -7,4 +7,9 @@ data class Cinema(var id: Int? = 0,
                   var rooms: String? = null,
                   var phone: String? = null,
                   var web: String? = null,
-                  var movies: List<Movie>? = ArrayList())
+                  var movies: List<Movie>? = ArrayList()) : Comparable<Cinema> {
+
+    override fun compareTo(other: Cinema): Int
+            = compareValuesBy(this, other, { it.name?.contains("EL TABLERO") }, { it.name?.contains("GUADALQUIVIR") }, { it.id })
+}
+

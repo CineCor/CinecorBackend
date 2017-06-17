@@ -17,8 +17,7 @@ object Parser {
 
     fun getCinemas(): List<Cinema>? {
         val cinemas = parseWeb()
-        cinemas?.sortByDescending { it.id }
-        return cinemas
+        return cinemas?.sortedDescending()
     }
 
     private fun parseWeb(): ArrayList<Cinema>? {
