@@ -15,12 +15,12 @@ import javax.imageio.ImageIO
 
 object Tmdb {
 
-    private val TMDB_LANGUAGE = "es-ES"
+    private const val TMDB_LANGUAGE = "es-ES"
     private val tmdbApi = TmdbApi(System.getenv("TMDB_API_KEY"))
 
     fun fillMovieData(cinemas: List<Cinema>) {
         cinemas.forEach { cinema ->
-            cinema.movies?.forEach { movie ->
+            cinema.movies.forEach { movie ->
                 if (!fillDataWithExistingMovie(cinemas, movie)) {
                     if (!fillDataWithExternalApi(movie) || StringUtils.isEmpty(movie.overview)) {
                         Parser.fillDataWithOriginalWeb(movie)
@@ -34,7 +34,7 @@ object Tmdb {
 
     private fun fillDataWithExistingMovie(cinemas: List<Cinema>, originalMovie: Movie): Boolean {
         cinemas.forEach { cinema ->
-            cinema.movies?.forEach { movie ->
+            cinema.movies.forEach { movie ->
                 if (movie.id == originalMovie.id && !movie.overview.isNullOrBlank()) {
                     originalMovie.copy(movie)
                     return true
@@ -46,19 +46,15 @@ object Tmdb {
 
     private fun fillDataWithExternalApi(movie: Movie): Boolean {
         var movieResults = searchMovie(movie.title, Main.NOW.year)
-        if (movieResults.totalResults == 0) {
-            movieResults = searchMovie(movie.title, Main.NOW.year - 1)
-        }
-        if (movieResults.totalResults == 0) {
-            movieResults = searchMovie(movie.title, 0)
-        }
+        if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, Main.NOW.year - 1)
+        if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, 0)
         if (movieResults.totalResults != 0) {
             var movieDb = movieResults.results[0]
             if (movieDb.overview.isNullOrEmpty() && movieResults.totalResults > 1) {
                 movieDb = movieResults.results[1]
             }
 
-            tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)?.let {
+            tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos).let {
                 movie.copy(it)
                 return true
             }
@@ -66,21 +62,25 @@ object Tmdb {
         return false
     }
 
-    private fun searchMovie(title: String?, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
+    private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
 
     private fun fillColors(movie: Movie) {
-        val images = movie.images
-        if (images == null || images.isEmpty()) return
+        if (movie.images.isEmpty()) return
 
-        val url = if (images.containsKey(Movie.Images.BACKDROP.name)) images[Movie.Images.BACKDROP.name] else images[Movie.Images.POSTER.name]
-        movie.colors = getMovieColorsFromUrl(url)
+        val url = if (movie.images.containsKey(Movie.Images.BACKDROP.name)) movie.images[Movie.Images.BACKDROP.name] else movie.images[Movie.Images.POSTER.name]
+        url?.let {
+            val colors = getMovieColorsFromUrl(it)
+            colors?.let {
+                movie.colors = colors
+            }
+        }
     }
 
-    private fun getMovieColorsFromUrl(url: String?): HashMap<String, String>? {
+    private fun getMovieColorsFromUrl(url: String): HashMap<String, String>? {
         try {
             val palette = Palette.Builder(Bitmap(ImageIO.read(URL(url)))).generate()
             if (palette != null) {
-                var swatch: Palette.Swatch? = palette.vibrantSwatch
+                var swatch = palette.vibrantSwatch
                 if (swatch == null) swatch = palette.mutedSwatch
                 if (swatch == null) return null
 

@@ -12,12 +12,13 @@ import kotlin.collections.ArrayList
 
 object Parser {
 
-    private val PARSE_TIMEOUT = 60000
-    private val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    private const val PARSE_TIMEOUT = 60000
+    private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
     fun getCinemas(): List<Cinema>? {
         val cinemas = parseWeb()
-        return cinemas?.sorted()
+        val sortedCinemas = cinemas?.sorted()
+        return sortedCinemas
     }
 
     private fun parseWeb(): ArrayList<Cinema>? {
