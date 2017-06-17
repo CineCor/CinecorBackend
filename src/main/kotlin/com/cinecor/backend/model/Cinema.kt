@@ -10,6 +10,6 @@ data class Cinema(var id: Int? = 0,
                   var movies: List<Movie>? = ArrayList()) : Comparable<Cinema> {
 
     override fun compareTo(other: Cinema): Int
-            = compareValuesBy(this, other, { it.name?.contains("EL TABLERO") }, { it.name?.contains("GUADALQUIVIR") }, { it.id })
+            = compareValuesBy(this, other, { !it.name!!.contains("EL TABLERO") }, { !it.name!!.contains("GUADALQUIVIR") }, { it.id })
 }
 
