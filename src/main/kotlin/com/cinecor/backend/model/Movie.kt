@@ -13,8 +13,6 @@ data class Movie(var id: Int = 0,
                  var duration: Int = 0,
                  var releaseDate: String = "",
                  var overview: String = "",
-                 var director: String = "",
-                 var url: String = "",
                  var rating: Float = 0.0f,
                  var title: String = "") {
 
@@ -31,8 +29,6 @@ data class Movie(var id: Int = 0,
         movie.duration.let { this.duration = it }
         movie.releaseDate.let { this.releaseDate = it }
         movie.overview.let { this.overview = it }
-        movie.director.let { this.director = it }
-        movie.url.let { this.url = it }
         movie.rating.let { this.rating = it }
         movie.title.let { this.title = it }
     }
