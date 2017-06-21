@@ -33,31 +33,27 @@ object Parser {
             val cinemasElements = document.select("div#bloqueportadaa")
             if (cinemasElements.isNotEmpty()) {
                 cinemasElements.forEach { cinemaElement ->
-                    val cinema = Cinema()
-                    cinema.name = cinemaElement.select("h1 a").text()
-                    cinema.id = Integer.parseInt(cinemaElement.select("a").first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
-
                     val movies = ArrayList<Movie>()
                     val moviesElements = cinemaElement.select("div.pildora")
                     moviesElements.forEach { movieElement ->
                         val movieLink = movieElement.select("a")
                         if (movieLink.isNotEmpty()) {
-                            val hoursText = movieElement.select("h5").text()
+                            val id = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1])
+                            val title = movieLink.first().text()
+                            val hours = getHoursDateFromText(movieElement.select("h5").text())
+                            val is3d = movieElement.select("h5").text().contains("3D")
+                            val isVose = movieElement.select("h5").text().contains("V.O.S.E")
+                            val url = movieLink.first().attr("abs:href")
 
-                            val movie = Movie()
-                            movie.id = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
-                            movie.hours = getHoursDateFromText(hoursText)
-                            movie.title = movieLink.first().text()
-                            movie.url = movieLink.first().attr("abs:href")
-                            movie.is3d = hoursText.contains("3D")
-                            movie.isVose = hoursText.contains("V.O.S.E")
-
-                            movies.add(movie)
+                            movies.add(Movie(id, title, hours, is3d, isVose, url))
                         }
                     }
+
                     if (movies.isNotEmpty()) {
-                        cinema.movies = movies
-                        cinemas.add(cinema)
+                        val id = Integer.parseInt(cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1])
+                        val name = cinemaElement.select("h1 a").text()
+
+                        cinemas.add(Cinema(id, name, movies))
                     }
                 }
 
@@ -117,6 +113,6 @@ object Parser {
             if (e is FileNotFoundException) posterBaseUrl = posterBaseUrl.replace("jpeg", "jpg")
         }
 
-        movie.images = hashMapOf(Pair(Movie.Images.POSTER.name, posterBaseUrl))
+        movie.images.put(Movie.Images.POSTER.name, posterBaseUrl)
     }
 }

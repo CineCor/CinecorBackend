@@ -3,49 +3,49 @@ package com.cinecor.backend.model
 import com.google.firebase.database.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
-data class Movie(var id: Int = 0,
-                 var colors: HashMap<String, String> = HashMap(),
+data class Movie(val id: Int,
+                 var title: String,
+                 var hours: List<String>,
+                 var is3d: Boolean,
+                 var isVose: Boolean,
+                 @Exclude var url: String,
                  var images: HashMap<String, String> = HashMap(),
-                 var hours: List<String> = ArrayList(),
-                 var genres: List<String> = ArrayList(),
-                 var rawDescription: String = "",
-                 var imdb: String = "",
-                 var trailer: String = "",
-                 var duration: Int = 0,
-                 var releaseDate: String = "",
+                 var colors: HashMap<String, String> = HashMap(),
                  var overview: String = "",
-                 var is3d: Boolean = false,
-                 var isVose: Boolean = false,
-                 @Exclude var url: String = "",
-                 var rating: Float = 0.0f,
-                 var title: String = "") {
+                 var imdb: String? = null,
+                 var rating: Float? = null,
+                 var duration: Int? = null,
+                 var trailer: String? = null,
+                 var releaseDate: String? = null,
+                 var genres: List<String>? = null,
+                 var rawDescription: String? = null) {
 
     enum class Images {POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
     enum class Colors {MAIN, TITLE }
 
     fun copy(movie: Movie) {
-        movie.colors.let { this.colors = it }
+        movie.title.let { this.title = it }
+        movie.url.let { this.url = it }
         movie.images.let { this.images = it }
+        movie.colors.let { this.colors = it }
+        movie.overview.let { this.overview = it }
+        movie.imdb.let { this.imdb = it }
+        movie.rating.let { this.rating = it }
+        movie.duration.let { this.duration = it }
+        movie.trailer.let { this.trailer = it }
+        movie.releaseDate.let { this.releaseDate = it }
         movie.genres.let { this.genres = it }
         movie.rawDescription.let { this.rawDescription = it }
-        movie.imdb.let { this.imdb = it }
-        movie.trailer.let { this.trailer = it }
-        movie.duration.let { this.duration = it }
-        movie.releaseDate.let { this.releaseDate = it }
-        movie.overview.let { this.overview = it }
-        movie.url.let { this.url = it }
-        movie.rating.let { this.rating = it }
-        movie.title.let { this.title = it }
     }
 
     fun copy(movieApi: MovieDb) {
-        movieApi.title.let { this.title = it }
-        movieApi.imdbID.let { this.imdb = "http://www.imdb.com/title/" + it }
+        movieApi.title?.let { this.title = it }
+        movieApi.overview?.let { this.overview = it }
+        movieApi.imdbID?.let { this.imdb = "http://www.imdb.com/title/" + it }
         movieApi.voteAverage.let { this.rating = it }
-        movieApi.overview.let { this.overview = it }
-        movieApi.releaseDate.let { this.releaseDate = it }
         movieApi.runtime.let { this.duration = it }
-        movieApi.genres.let { this.genres = it.map { it.name } }
+        movieApi.releaseDate?.let { this.releaseDate = it }
+        movieApi.genres?.let { this.genres = it.map { it.name } }
         movieApi.videos?.let { videos ->
             if (videos.isNotEmpty()) {
                 videos.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let {
