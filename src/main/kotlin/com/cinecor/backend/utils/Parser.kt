@@ -5,10 +5,10 @@ import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.google.common.base.CharMatcher
 import org.jsoup.Jsoup
+import java.net.HttpURLConnection
+import java.net.URL
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
-import kotlin.collections.ArrayList
 
 object Parser {
 
@@ -30,7 +30,7 @@ object Parser {
                     .get()
 
             val cinemasElements = document.select("div#bloqueportadaa")
-            if (!cinemasElements.isEmpty()) {
+            if (cinemasElements.isNotEmpty()) {
                 cinemasElements.forEach { cinemaElement ->
                     val cinema = Cinema()
                     cinema.name = cinemaElement.select("h1 a").text()
@@ -42,16 +42,11 @@ object Parser {
                         val movieLink = movieElement.select("a")
                         if (movieLink.isNotEmpty()) {
                             val movie = Movie()
-                            val movieId = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
 
-                            movie.id = movieId
+                            movie.id = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
                             movie.hours = getHoursDateFromText(movieElement.select("h5").text())
                             movie.title = movieLink.first().text()
-                            movie.images = object : HashMap<String, String>() {
-                                init {
-                                    put(Movie.Images.POSTER.name, System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpeg")
-                                }
-                            }
+                            movie.images = getPosterImage(movie.id)
                             movie.url = movieLink.first().attr("abs:href")
 
                             movies.add(movie)
@@ -73,6 +68,17 @@ object Parser {
             System.exit(0)
         }
         return null
+    }
+
+    private fun getPosterImage(movieId: Int): HashMap<String, String> {
+        var posterUrl = System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpeg"
+
+        val http = URL(posterUrl).openConnection() as HttpURLConnection
+        if (http.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            posterUrl = System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpg"
+        }
+
+        return hashMapOf(Pair(Movie.Images.POSTER.name, posterUrl))
     }
 
     fun fillDataWithOriginalWeb(movie: Movie) {
