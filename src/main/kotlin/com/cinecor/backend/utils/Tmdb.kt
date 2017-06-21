@@ -97,5 +97,5 @@ object Tmdb {
     }
 
     private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
-    private fun formatColor(color: Int): String = String.format("#%02x%02x%02x", Color.red(color), Color.green(color), Color.blue(color))
+    private fun formatColor(color: Int): String = String.format("#%02x%02x%02x%02x", Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color))
 }
