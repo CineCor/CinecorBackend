@@ -8,7 +8,6 @@ import com.vivekpanyam.iris.Color
 import com.vivekpanyam.iris.Palette
 import info.movito.themoviedbapi.TmdbApi
 import info.movito.themoviedbapi.TmdbMovies
-import org.apache.commons.lang3.StringUtils
 import java.io.IOException
 import java.net.URL
 import javax.imageio.ImageIO
@@ -22,8 +21,12 @@ object Tmdb {
         cinemas.forEach { cinema ->
             cinema.movies.forEach { movie ->
                 if (!fillDataWithExistingMovie(cinemas, movie)) {
-                    if (!fillDataWithExternalApi(movie) || StringUtils.isEmpty(movie.overview)) {
+                    if (!fillDataWithExternalApi(movie) || movie.overview.isNullOrBlank()) {
                         Parser.fillDataWithOriginalWeb(movie)
+                    }
+
+                    if (!movie.images.containsKey(Movie.Images.POSTER.name)) {
+                        Parser.fillPosterImage(movie)
                     }
 
                     fillColors(movie)

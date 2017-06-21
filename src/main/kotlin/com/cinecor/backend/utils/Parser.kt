@@ -5,7 +5,8 @@ import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.google.common.base.CharMatcher
 import org.jsoup.Jsoup
-import java.net.HttpURLConnection
+import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.URL
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -46,7 +47,6 @@ object Parser {
                             movie.id = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
                             movie.hours = getHoursDateFromText(movieElement.select("h5").text())
                             movie.title = movieLink.first().text()
-                            movie.images = getPosterImage(movie.id)
                             movie.url = movieLink.first().attr("abs:href")
 
                             movies.add(movie)
@@ -70,15 +70,14 @@ object Parser {
         return null
     }
 
-    private fun getPosterImage(movieId: Int): HashMap<String, String> {
-        var posterUrl = System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpeg"
-
-        val http = URL(posterUrl).openConnection() as HttpURLConnection
-        if (http.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            posterUrl = System.getenv("PARSE_URL") + "gestor/ficheros/imagen$movieId.jpg"
-        }
-
-        return hashMapOf(Pair(Movie.Images.POSTER.name, posterUrl))
+    private fun getHoursDateFromText(text: String): List<String> {
+        return text
+                .split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                .map { CharMatcher.digit().retainFrom(it) }
+                .filter { it.length >= 4 }
+                .map { LocalTime.parse(it.substring(0, 4), DateTimeFormatter.ofPattern("HHmm")) }
+                .map { Main.NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
+                .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
 
     fun fillDataWithOriginalWeb(movie: Movie) {
@@ -106,13 +105,15 @@ object Parser {
         }
     }
 
-    private fun getHoursDateFromText(text: String): List<String> {
-        return text
-                .split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                .map { CharMatcher.digit().retainFrom(it) }
-                .filter { it.length >= 4 }
-                .map { LocalTime.parse(it.substring(0, 4), DateTimeFormatter.ofPattern("HHmm")) }
-                .map { Main.NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
-                .map { DateTimeFormatter.ISO_INSTANT.format(it) }
+    fun fillPosterImage(movie: Movie) {
+        var posterBaseUrl = System.getenv("PARSE_URL") + "gestor/ficheros/imagen${movie.id}.jpeg"
+
+        try {
+            URL(posterBaseUrl).readText()
+        } catch (e: IOException) {
+            if (e is FileNotFoundException) posterBaseUrl = posterBaseUrl.replace("jpeg", "jpg")
+        }
+
+        movie.images = hashMapOf(Pair(Movie.Images.POSTER.name, posterBaseUrl))
     }
 }
