@@ -21,7 +21,7 @@ data class Movie(val id: Int,
                  var rawDescription: String? = null) {
 
     enum class Images {POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
-    enum class Colors {MAIN, TITLE }
+    enum class Colors {MAIN, TITLE, BODY }
 
     fun copy(movie: Movie) {
         movie.title.let { this.title = it }

@@ -72,9 +72,7 @@ object Tmdb {
         val url = movie.images.getOrDefault(Movie.Images.BACKDROP.name, movie.images[Movie.Images.POSTER.name])
         url?.let {
             val colors = getMovieColorsFromUrl(it)
-            colors?.let {
-                movie.colors = it
-            }
+            colors?.let { movie.colors = it }
         }
     }
 
@@ -86,11 +84,11 @@ object Tmdb {
                 if (swatch == null) swatch = palette.mutedSwatch
                 if (swatch == null) swatch = palette.dominantSwatch
 
-                val colors = hashMapOf(
+                return hashMapOf(
                         Pair(Movie.Colors.MAIN.name, formatColor(swatch.rgb)),
-                        Pair(Movie.Colors.TITLE.name, formatColor(swatch.titleTextColor))
+                        Pair(Movie.Colors.TITLE.name, formatColor(swatch.titleTextColor)),
+                        Pair(Movie.Colors.BODY.name, formatColor(swatch.bodyTextColor))
                 )
-                return colors
             }
         } catch (e: IOException) {
             e.printStackTrace()
