@@ -42,12 +42,15 @@ object Parser {
                     moviesElements.forEach { movieElement ->
                         val movieLink = movieElement.select("a")
                         if (movieLink.isNotEmpty()) {
-                            val movie = Movie()
+                            val hoursText = movieElement.select("h5").text()
 
+                            val movie = Movie()
                             movie.id = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1])
-                            movie.hours = getHoursDateFromText(movieElement.select("h5").text())
+                            movie.hours = getHoursDateFromText(hoursText)
                             movie.title = movieLink.first().text()
                             movie.url = movieLink.first().attr("abs:href")
+                            movie.is3d = hoursText.contains("3D")
+                            movie.isVose = hoursText.contains("V.O.S.E")
 
                             movies.add(movie)
                         }
