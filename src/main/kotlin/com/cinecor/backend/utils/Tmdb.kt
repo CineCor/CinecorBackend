@@ -69,7 +69,7 @@ object Tmdb {
     private fun fillColors(movie: Movie) {
         if (movie.images.isEmpty()) return
 
-        val url = movie.images.getOrDefault(Movie.Images.BACKDROP.name, movie.images[Movie.Images.POSTER.name])
+        val url = movie.images.getOrDefault(Movie.Images.BACKDROP_THUMBNAIL.name, movie.images[Movie.Images.POSTER.name])
         url?.let {
             val colors = getMovieColorsFromUrl(it)
             colors?.let { movie.colors = it }
@@ -97,5 +97,5 @@ object Tmdb {
     }
 
     private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
-    private fun formatColor(color: Int): String = String.format("#%02x%02x%02x%02x", Color.alpha(color), Color.red(color), Color.green(color), Color.blue(color))
+    private fun formatColor(color: Int): String = String.format("#%02x%02x%02x%02x", Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color))
 }
