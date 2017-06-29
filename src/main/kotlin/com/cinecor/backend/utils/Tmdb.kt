@@ -1,6 +1,6 @@
 package com.cinecor.backend.utils
 
-import com.cinecor.backend.Main
+import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.vivekpanyam.iris.Bitmap
@@ -48,8 +48,8 @@ object Tmdb {
     }
 
     private fun fillDataWithExternalApi(movie: Movie): Boolean {
-        var movieResults = searchMovie(movie.title, Main.NOW.year)
-        if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, Main.NOW.year - 1)
+        var movieResults = searchMovie(movie.title, NOW.year)
+        if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, NOW.year - 1)
         if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, 0)
         if (movieResults.totalResults != 0) {
             var movieDb = movieResults.results[0]
@@ -58,7 +58,7 @@ object Tmdb {
             }
 
             val movieApi = tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)
-            movieApi.let {
+            movieApi?.let {
                 movie.copy(it)
                 return true
             }
@@ -68,15 +68,11 @@ object Tmdb {
 
     private fun fillColors(movie: Movie) {
         if (movie.images.isEmpty()) return
-
         val url = movie.images.getOrDefault(Movie.Images.BACKDROP_THUMBNAIL.name, movie.images[Movie.Images.POSTER.name])
-        url?.let {
-            val colors = getMovieColorsFromUrl(it)
-            colors?.let { movie.colors = it }
-        }
+        getMovieColorsFromUrl(url)?.let { movie.colors = it }
     }
 
-    private fun getMovieColorsFromUrl(url: String): HashMap<String, String>? {
+    private fun getMovieColorsFromUrl(url: String?): HashMap<String, String>? {
         try {
             val palette = Palette.Builder(Bitmap(ImageIO.read(URL(url)))).generate()
             palette?.let {
@@ -85,9 +81,9 @@ object Tmdb {
                 if (swatch == null) swatch = palette.dominantSwatch
 
                 return hashMapOf(
-                        Pair(Movie.Colors.MAIN.name, formatColor(swatch.rgb)),
-                        Pair(Movie.Colors.TITLE.name, formatColor(swatch.titleTextColor)),
-                        Pair(Movie.Colors.BODY.name, formatColor(swatch.bodyTextColor))
+                        Pair(Movie.Colors.MAIN.name, swatch.rgb.formatedColor()),
+                        Pair(Movie.Colors.TITLE.name, swatch.titleTextColor.formatedColor()),
+                        Pair(Movie.Colors.BODY.name, swatch.bodyTextColor.formatedColor())
                 )
             }
         } catch (e: IOException) {
@@ -97,5 +93,6 @@ object Tmdb {
     }
 
     private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
-    private fun formatColor(color: Int): String = String.format("#%02x%02x%02x%02x", Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color))
+
+    private fun Int.formatedColor() = String.format("#%02x%02x%02x%02x", Color.red(this), Color.green(this), Color.blue(this), Color.alpha(this))
 }

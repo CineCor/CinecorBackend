@@ -1,6 +1,6 @@
 package com.cinecor.backend.utils
 
-import com.cinecor.backend.Main
+import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.google.common.base.CharMatcher
@@ -16,11 +16,7 @@ object Parser {
     private const val PARSE_TIMEOUT = 60000
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-    fun getCinemas(): List<Cinema>? {
-        val cinemas = parseWeb()
-        val sortedCinemas = cinemas?.sorted()
-        return sortedCinemas
-    }
+    fun getCinemas() = parseWeb()?.sorted()
 
     private fun parseWeb(): ArrayList<Cinema>? {
         try {
@@ -75,7 +71,7 @@ object Parser {
                 .map { CharMatcher.digit().retainFrom(it) }
                 .filter { it.length >= 4 }
                 .map { LocalTime.parse(it.substring(0, 4), DateTimeFormatter.ofPattern("HHmm")) }
-                .map { Main.NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
+                .map { NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
                 .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
 

@@ -1,6 +1,6 @@
 package com.cinecor.backend.utils
 
-import com.cinecor.backend.Main
+import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Cinema
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -25,7 +25,7 @@ class FirebaseManager {
     fun uploadCinemas(cinemas: List<Cinema>) {
         val data = mapOf<String, Any>(
                 Pair("cinemas", cinemas),
-                Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(Main.NOW))
+                Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
         )
 
         firebaseDatabase.reference.setValue(data) { databaseError, _ ->

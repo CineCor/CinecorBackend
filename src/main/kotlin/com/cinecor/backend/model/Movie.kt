@@ -29,13 +29,13 @@ data class Movie(val id: Int,
         movie.images.let { this.images = it }
         movie.colors.let { this.colors = it }
         movie.overview.let { this.overview = it }
-        movie.imdb.let { this.imdb = it }
-        movie.rating.let { this.rating = it }
-        movie.duration.let { this.duration = it }
-        movie.trailer.let { this.trailer = it }
-        movie.releaseDate.let { this.releaseDate = it }
-        movie.genres.let { this.genres = it }
-        movie.rawDescription.let { this.rawDescription = it }
+        movie.imdb?.let { this.imdb = it }
+        movie.rating?.let { this.rating = it }
+        movie.duration?.let { this.duration = it }
+        movie.trailer?.let { this.trailer = it }
+        movie.releaseDate?.let { this.releaseDate = it }
+        movie.genres?.let { this.genres = it }
+        movie.rawDescription?.let { this.rawDescription = it }
     }
 
     fun copy(movieApi: MovieDb) {
