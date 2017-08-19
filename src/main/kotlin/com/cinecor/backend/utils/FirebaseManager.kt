@@ -1,7 +1,7 @@
 package com.cinecor.backend.utils
 
 import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.model.Cinema
+import com.cinecor.backend.model.Billboard
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
@@ -15,16 +15,16 @@ class FirebaseManager {
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
                 .setCredential(FirebaseCredentials.fromCertificate(System.getenv("FIREBASE_KEY").byteInputStream()))
-                .setDatabaseAuthVariableOverride(hashMapOf<String, Any>(Pair("uid", System.getenv("FIREBASE_UID"))))
+                .setDatabaseAuthVariableOverride(mapOf(Pair("uid", System.getenv("FIREBASE_UID"))))
                 .setDatabaseUrl(System.getenv("FIREBASE_DB"))
                 .build())
 
         firebaseDatabase = FirebaseDatabase.getInstance()
     }
 
-    fun uploadCinemas(cinemas: List<Cinema>) {
-        val data = mapOf<String, Any>(
-                Pair("cinemas", cinemas),
+    fun uploadBillboard(billboard: Billboard) {
+        val data = mapOf(
+                Pair("billboard", billboard),
                 Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
         )
 
