@@ -22,10 +22,10 @@ object Main {
 
         billboard?.let {
             println("Filling Movies Data...")
-            TmdbManager.fillMoviesData(it.movies)
+            TmdbManager.fillMoviesData(billboard.movies)
 
             println("Writing to Firebase...")
-            firebaseManager.uploadBillboard(it)
+            firebaseManager.uploadBillboard(billboard)
         }
     }
 }

@@ -1,8 +1,7 @@
 package com.cinecor.backend.utils
 
 import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.model.Cinema
-import com.cinecor.backend.model.Movie
+import com.cinecor.backend.model.*
 import com.google.common.base.CharMatcher
 import org.jsoup.Jsoup
 import java.io.FileNotFoundException
@@ -16,11 +15,13 @@ object Parser {
     private const val PARSE_TIMEOUT = 60000
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-    fun getCinemas() = parseWeb()?.sorted()
+//    fun getBillboard() = parseBillboard()?.sorted()
 
-    private fun parseWeb(): ArrayList<Cinema>? {
+    fun parseBillboard(): Billboard? {
+        val cinemas = HashSet<CinemaDto>()
+        val movies = HashSet<MovieDto>()
+
         try {
-            val cinemas = ArrayList<Cinema>()
             val document = Jsoup.connect(System.getenv("PARSE_URL"))
                     .userAgent(PARSE_USER_AGENT)
                     .timeout(PARSE_TIMEOUT)
@@ -29,7 +30,6 @@ object Parser {
             val cinemasElements = document.select("div#bloqueportadaa")
             if (cinemasElements.isNotEmpty()) {
                 cinemasElements.forEach { cinemaElement ->
-                    val movies = ArrayList<Movie>()
                     val moviesElements = cinemaElement.select("div.pildora")
                     moviesElements.forEach { movieElement ->
                         val movieLink = movieElement.select("a")
@@ -41,7 +41,7 @@ object Parser {
                             val isVose = movieElement.select("h5").text().contains("V.O.S.E")
                             val url = movieLink.first().attr("abs:href")
 
-                            movies.add(Movie(id, title, hours, is3d, isVose, url))
+                            movies.add(MovieDto(id, title, hours))
                         }
                     }
 
@@ -49,7 +49,7 @@ object Parser {
                         val id = Integer.parseInt(cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1])
                         val name = cinemaElement.select("h1 a").text()
 
-                        cinemas.add(Cinema(id, name, movies))
+                        cinemas.add(CinemaDto(id, name, movies))
                     }
                 }
 

@@ -18,7 +18,7 @@ object TmdbManager {
 
     fun fillMoviesData(movies: List<Movie>) {
         movies.forEach { movie ->
-            if (!fillDataWithExistingMovie(movies, movie)) {
+            if (!fillDataWithExistingMovie(movie, movies)) {
                 if (!fillDataWithExternalApi(movie) || movie.overview.isBlank()) {
                     Parser.fillDataWithOriginalWeb(movie)
                 }
@@ -32,7 +32,7 @@ object TmdbManager {
         }
     }
 
-    private fun fillDataWithExistingMovie(movies: List<Movie>, originalMovie: Movie): Boolean {
+    private fun fillDataWithExistingMovie(originalMovie: Movie, movies: List<Movie>): Boolean {
         movies.forEach { movie ->
             if (movie.id == originalMovie.id && movie.overview.isNotBlank()) {
                 originalMovie.copy(movie)
