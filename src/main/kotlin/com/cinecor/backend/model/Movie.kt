@@ -5,7 +5,6 @@ import info.movito.themoviedbapi.model.MovieDb
 
 data class Movie(val id: Int,
                  var title: String,
-                 var hours: List<String>,
                  var is3d: Boolean,
                  var isVose: Boolean,
                  @Exclude var url: String,

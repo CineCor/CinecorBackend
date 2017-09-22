@@ -15,11 +15,9 @@ object Parser {
     private const val PARSE_TIMEOUT = 60000
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-//    fun getBillboard() = parseBillboard()?.sorted()
-
     fun parseBillboard(): Billboard? {
-        val cinemas = HashSet<CinemaDto>()
-        val movies = HashSet<MovieDto>()
+        val cinemas = ArrayList<CinemaDto>()
+        val movies = ArrayList<MovieDto>()
 
         try {
             val document = Jsoup.connect(System.getenv("PARSE_URL"))
@@ -41,7 +39,7 @@ object Parser {
                             val isVose = movieElement.select("h5").text().contains("V.O.S.E")
                             val url = movieLink.first().attr("abs:href")
 
-                            movies.add(MovieDto(id, title, hours))
+                            movies.add(MovieDto(id, title, hours, is3d, isVose, url))
                         }
                     }
 
@@ -53,7 +51,7 @@ object Parser {
                     }
                 }
 
-                return cinemas
+                return getBillBoard(cinemas.sorted(), movies)
             } else {
                 println("Empty cinemas")
                 System.exit(0)
@@ -63,6 +61,16 @@ object Parser {
             System.exit(0)
         }
         return null
+    }
+
+    private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): Billboard {
+        val cinemas = HashSet<Cinema>()
+        val movies = HashSet<Movie>()
+
+        cinemasDto.forEach { cinemas.add(Cinema(it.id, it.name, it.movies)) }
+        moviesDto.forEach { movies.add(Movie(it.id, it.title, it.is3d, it.isVose, it.url)) }
+
+        return Billboard(cinemasDto, cinemas, movies)
     }
 
     private fun getHoursDateFromText(text: String): List<String> {

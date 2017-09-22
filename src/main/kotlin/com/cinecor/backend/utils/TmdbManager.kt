@@ -16,7 +16,7 @@ object TmdbManager {
     private const val TMDB_LANGUAGE = "es-ES"
     private val tmdbApi = TmdbApi(System.getenv("TMDB_API_KEY"))
 
-    fun fillMoviesData(movies: List<Movie>) {
+    fun fillMoviesData(movies: Set<Movie>) {
         movies.forEach { movie ->
             if (!fillDataWithExistingMovie(movie, movies)) {
                 if (!fillDataWithExternalApi(movie) || movie.overview.isBlank()) {
@@ -32,7 +32,7 @@ object TmdbManager {
         }
     }
 
-    private fun fillDataWithExistingMovie(originalMovie: Movie, movies: List<Movie>): Boolean {
+    private fun fillDataWithExistingMovie(originalMovie: Movie, movies: Set<Movie>): Boolean {
         movies.forEach { movie ->
             if (movie.id == originalMovie.id && movie.overview.isNotBlank()) {
                 originalMovie.copy(movie)
