@@ -1,7 +1,7 @@
 package com.cinecor.backend.utils
 
 import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.model.Billboard
+import com.cinecor.backend.model.BillboardData
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
@@ -22,13 +22,13 @@ class FirebaseManager {
         firebaseDatabase = FirebaseDatabase.getInstance()
     }
 
-    fun uploadBillboard(billboard: Billboard) {
+    fun uploadBillboard(billboardData: BillboardData) {
         val data = mapOf(
-                Pair("billboard", billboard),
+                Pair("billboardData", billboardData),
                 Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
         )
 
-        firebaseDatabase.reference.setValue(data) { databaseError, _ ->
+        firebaseDatabase.getReference("v2").setValue(data) { databaseError, _ ->
             if (databaseError != null) {
                 println("Data could not be saved " + databaseError.message)
                 System.exit(1)

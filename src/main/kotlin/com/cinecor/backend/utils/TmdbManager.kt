@@ -1,6 +1,8 @@
 package com.cinecor.backend.utils
 
 import com.cinecor.backend.Main.NOW
+import com.cinecor.backend.model.BillboardData
+import com.cinecor.backend.model.CinemaDto
 import com.cinecor.backend.model.Movie
 import com.vivekpanyam.iris.Bitmap
 import com.vivekpanyam.iris.Color
@@ -16,9 +18,9 @@ object TmdbManager {
     private const val TMDB_LANGUAGE = "es-ES"
     private val tmdbApi = TmdbApi(System.getenv("TMDB_API_KEY"))
 
-    fun fillMoviesData(movies: Set<Movie>) {
-        movies.forEach { movie ->
-            if (!fillDataWithExistingMovie(movie, movies)) {
+    fun fillMoviesData(billboardData: BillboardData) {
+        billboardData.movies.forEach { movie ->
+            if (!fillDataWithExistingMovie(movie, billboardData.movies)) {
                 if (!fillDataWithExternalApi(movie) || movie.overview.isBlank()) {
                     Parser.fillDataWithOriginalWeb(movie)
                 }
@@ -29,10 +31,11 @@ object TmdbManager {
 
                 fillColors(movie)
             }
+            fillBillboardMovie(billboardData.billboard, movie)
         }
     }
 
-    private fun fillDataWithExistingMovie(originalMovie: Movie, movies: Set<Movie>): Boolean {
+    private fun fillDataWithExistingMovie(originalMovie: Movie, movies: List<Movie>): Boolean {
         movies.forEach { movie ->
             if (movie.id == originalMovie.id && movie.overview.isNotBlank()) {
                 originalMovie.copy(movie)
@@ -85,6 +88,16 @@ object TmdbManager {
             e.printStackTrace()
         }
         return null
+    }
+
+    private fun fillBillboardMovie(billboard: List<CinemaDto>, movie: Movie) {
+        billboard.forEach {
+            it.movies.filter { it.id == movie.id }.forEach {
+                it.title = movie.title
+                it.images = movie.images
+                it.colors = movie.colors
+            }
+        }
     }
 
     private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)

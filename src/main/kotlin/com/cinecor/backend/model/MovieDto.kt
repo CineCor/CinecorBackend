@@ -6,5 +6,5 @@ data class MovieDto(val id: Int,
                     var is3d: Boolean,
                     var isVose: Boolean,
                     var url: String,
-                    var images: Map<String, String> = HashMap(),
-                    var colors: Map<String, String> = HashMap())
+                    var images: HashMap<String, String> = HashMap(),
+                    var colors: HashMap<String, String> = HashMap())

@@ -15,7 +15,7 @@ object Parser {
     private const val PARSE_TIMEOUT = 60000
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-    fun parseBillboard(): Billboard? {
+    fun parseBillboard(): BillboardData? {
         val cinemas = ArrayList<CinemaDto>()
         val movies = ArrayList<MovieDto>()
 
@@ -63,14 +63,14 @@ object Parser {
         return null
     }
 
-    private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): Billboard {
+    private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): BillboardData {
         val cinemas = HashSet<Cinema>()
         val movies = HashSet<Movie>()
 
         cinemasDto.forEach { cinemas.add(Cinema(it.id, it.name, it.movies)) }
         moviesDto.forEach { movies.add(Movie(it.id, it.title, it.is3d, it.isVose, it.url)) }
 
-        return Billboard(cinemasDto, cinemas, movies)
+        return BillboardData(cinemasDto, cinemas.toList(), movies.toList())
     }
 
     private fun getHoursDateFromText(text: String): List<String> {
