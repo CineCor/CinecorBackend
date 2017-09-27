@@ -1,7 +1,7 @@
 package com.cinecor.backend.firebase
 
 import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.model.BillboardData
+import com.cinecor.backend.model.dto.BillboardDto
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
@@ -22,7 +22,7 @@ class FirebaseManager {
         firebaseDatabase = FirebaseDatabase.getInstance()
     }
 
-    fun uploadBillboard(billboardData: BillboardData) {
+    fun uploadBillboard(billboardData: BillboardDto) {
         val data = getDataFromBillboard(billboardData)
         firebaseDatabase.getReference("v2").setValue(data) { databaseError, _ ->
             if (databaseError != null) {
@@ -35,7 +35,7 @@ class FirebaseManager {
         }
     }
 
-    private fun getDataFromBillboard(billboardData: BillboardData): Any {
+    private fun getDataFromBillboard(billboardData: BillboardDto): Any {
         return mapOf(
                 Pair("billboard", billboardData.billboard.associate { it.id to it }),
                 Pair("cinemas", billboardData.cinemas.associate { it.id to it }),

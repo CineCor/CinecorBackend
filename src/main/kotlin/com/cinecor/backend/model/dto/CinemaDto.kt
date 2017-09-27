@@ -1,4 +1,4 @@
-package com.cinecor.backend.firebase.model
+package com.cinecor.backend.model.dto
 
 data class CinemaDto(val id: String,
                      var name: String,

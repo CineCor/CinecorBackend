@@ -1,9 +1,9 @@
 package com.cinecor.backend.parser
 
 import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.firebase.model.CinemaDto
-import com.cinecor.backend.firebase.model.MovieDto
-import com.cinecor.backend.model.BillboardData
+import com.cinecor.backend.model.dto.CinemaDto
+import com.cinecor.backend.model.dto.MovieDto
+import com.cinecor.backend.model.dto.BillboardDto
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.google.common.base.CharMatcher
@@ -19,7 +19,7 @@ object JsoupManager {
     private const val PARSE_TIMEOUT = 60000
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-    fun parseBillboard(): BillboardData? {
+    fun parseBillboard(): BillboardDto? {
         val cinemas = ArrayList<CinemaDto>()
         val movies = ArrayList<MovieDto>()
 
@@ -67,10 +67,10 @@ object JsoupManager {
         return null
     }
 
-    private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): BillboardData {
+    private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): BillboardDto {
         val cinemas = cinemasDto.map { Cinema(it.id, it.name) }
         val movies = moviesDto.map { Movie(it.id, it.title, it.is3d, it.isVose, it.url) }
-        return BillboardData(cinemasDto, cinemas, movies)
+        return BillboardDto(cinemasDto, cinemas, movies)
     }
 
     private fun getHoursDateFromText(text: String): List<String> {
