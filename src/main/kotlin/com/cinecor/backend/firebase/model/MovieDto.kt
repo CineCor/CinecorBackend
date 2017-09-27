@@ -1,6 +1,6 @@
 package com.cinecor.backend.firebase.model
 
-data class MovieDto(val id: Int,
+data class MovieDto(val id: String,
                     var title: String,
                     var hours: List<String>,
                     var is3d: Boolean,

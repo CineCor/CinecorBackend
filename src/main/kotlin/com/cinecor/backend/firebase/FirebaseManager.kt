@@ -23,13 +23,7 @@ class FirebaseManager {
     }
 
     fun uploadBillboard(billboardData: BillboardData) {
-        val data = mapOf(
-                Pair("billboard", billboardData.billboard),
-                Pair("cinemas", billboardData.cinemas),
-                Pair("movies", billboardData.movies),
-                Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
-        )
-
+        val data = getDataFromBillboard(billboardData)
         firebaseDatabase.getReference("v2").setValue(data) { databaseError, _ ->
             if (databaseError != null) {
                 println("Data could not be saved " + databaseError.message)
@@ -39,5 +33,14 @@ class FirebaseManager {
                 System.exit(0)
             }
         }
+    }
+
+    private fun getDataFromBillboard(billboardData: BillboardData): Any {
+        return mapOf(
+                Pair("billboard", billboardData.billboard.associate { it.id to it }),
+                Pair("cinemas", billboardData.cinemas.associate { it.id to it }),
+                Pair("movies", billboardData.movies.associate { it.id to it }),
+                Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
+        )
     }
 }

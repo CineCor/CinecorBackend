@@ -36,7 +36,7 @@ object JsoupManager {
                     moviesElements.forEach { movieElement ->
                         val movieLink = movieElement.select("a")
                         if (movieLink.isNotEmpty()) {
-                            val id = Integer.parseInt(movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1])
+                            val id = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                             val title = movieLink.first().text()
                             val hours = getHoursDateFromText(movieElement.select("h5").text())
                             val is3d = movieElement.select("h5").text().contains("3D")
@@ -48,7 +48,7 @@ object JsoupManager {
                     }
 
                     if (moviesElements.select("a").isNotEmpty()) {
-                        val id = Integer.parseInt(cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1])
+                        val id = cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                         val name = cinemaElement.select("h1 a").text()
 
                         cinemas.add(CinemaDto(id, name, movies))

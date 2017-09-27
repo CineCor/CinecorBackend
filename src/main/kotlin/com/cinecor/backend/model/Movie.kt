@@ -3,7 +3,7 @@ package com.cinecor.backend.model
 import com.google.firebase.database.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
-data class Movie(val id: Int,
+data class Movie(val id: String,
                  var title: String,
                  var is3d: Boolean,
                  var isVose: Boolean,
