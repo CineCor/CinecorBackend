@@ -37,28 +37,28 @@ data class Movie(val id: Int,
         movie.rawDescription?.let { this.rawDescription = it }
     }
 
-    fun copy(movieApi: MovieDb) {
-        movieApi.title?.let { this.title = it }
-        movieApi.overview?.let { this.overview = it }
-        movieApi.imdbID?.let { this.imdb = "http://www.imdb.com/title/" + it }
-        movieApi.voteAverage.let { this.rating = it }
-        movieApi.runtime.let { this.duration = it }
-        movieApi.releaseDate?.let { this.releaseDate = it }
-        movieApi.genres?.let { this.genres = it.map { it.name } }
-        movieApi.videos?.let { videos ->
+    fun copy(movieDb: MovieDb) {
+        movieDb.title?.let { this.title = it }
+        movieDb.overview?.let { this.overview = it }
+        movieDb.imdbID?.let { this.imdb = "http://www.imdb.com/title/" + it }
+        movieDb.voteAverage.let { this.rating = it }
+        movieDb.runtime.let { this.duration = it }
+        movieDb.releaseDate?.let { this.releaseDate = it }
+        movieDb.genres?.let { this.genres = it.map { it.name } }
+        movieDb.videos?.let { videos ->
             if (videos.isNotEmpty()) {
                 videos.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let {
                     this.trailer = "https://www.youtube.com/watch?v=" + it
                 }
             }
         }
-        movieApi.posterPath?.let { path ->
+        movieDb.posterPath?.let { path ->
             if (path.isNotBlank()) {
                 this.images.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780" + path)
                 this.images.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92" + path)
             }
         }
-        movieApi.backdropPath?.let { path ->
+        movieDb.backdropPath?.let { path ->
             if (path.isNotBlank()) {
                 this.images.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780" + path)
                 this.images.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300" + path)
