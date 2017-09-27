@@ -47,7 +47,7 @@ object JsoupManager {
                         }
                     }
 
-                    if (movies.isNotEmpty()) {
+                    if (moviesElements.select("a").isNotEmpty()) {
                         val id = Integer.parseInt(cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1])
                         val name = cinemaElement.select("h1 a").text()
 
@@ -68,13 +68,9 @@ object JsoupManager {
     }
 
     private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): BillboardData {
-        val cinemas = HashSet<Cinema>()
-        val movies = HashSet<Movie>()
-
-        cinemasDto.forEach { cinemas.add(Cinema(it.id, it.name)) }
-        moviesDto.forEach { movies.add(Movie(it.id, it.title, it.is3d, it.isVose, it.url)) }
-
-        return BillboardData(cinemasDto, cinemas.toList(), movies.toList())
+        val cinemas = cinemasDto.map { Cinema(it.id, it.name) }
+        val movies = moviesDto.map { Movie(it.id, it.title, it.is3d, it.isVose, it.url) }
+        return BillboardData(cinemasDto, cinemas, movies)
     }
 
     private fun getHoursDateFromText(text: String): List<String> {
