@@ -37,7 +37,7 @@ class FirebaseManager {
 
     private fun getDataFromBillboard(billboardData: BillboardDto): Any {
         return mapOf(
-                Pair("billboard", billboardData.billboard.associate { it.id to it }),
+                Pair("billboard", billboardData.billboard),
                 Pair("cinemas", billboardData.cinemas.associate { it.id to it }),
                 Pair("movies", billboardData.movies.associate { it.id to it }),
                 Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
