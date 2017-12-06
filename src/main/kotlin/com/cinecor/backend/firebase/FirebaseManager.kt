@@ -2,6 +2,7 @@ package com.cinecor.backend.firebase
 
 import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.dto.BillboardDto
+import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseCredentials
@@ -14,7 +15,7 @@ class FirebaseManager {
 
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
-                .setCredential(FirebaseCredentials.fromCertificate(System.getenv("FIREBASE_KEY").byteInputStream()))
+                .setCredentials(GoogleCredentials.fromStream(System.getenv("FIREBASE_KEY").byteInputStream()))
                 .setDatabaseAuthVariableOverride(mapOf(Pair("uid", System.getenv("FIREBASE_UID"))))
                 .setDatabaseUrl(System.getenv("FIREBASE_DB"))
                 .build())
