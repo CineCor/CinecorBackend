@@ -1,47 +1,49 @@
 package com.cinecor.backend.firebase
 
-import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.model.dto.BillboardDto
+import com.cinecor.backend.model.Billboard
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.firestore.Firestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
-import com.google.firebase.auth.FirebaseCredentials
-import com.google.firebase.database.FirebaseDatabase
-import java.time.format.DateTimeFormatter
+import com.google.firebase.cloud.FirestoreClient
+import com.google.cloud.firestore.WriteBatch
+import com.google.api.core.ApiFuture
+
+
+
+
 
 class FirebaseManager {
 
-    private val firebaseDatabase: FirebaseDatabase
+    private val firestoreDb: Firestore
 
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(System.getenv("FIREBASE_KEY").byteInputStream()))
                 .setDatabaseAuthVariableOverride(mapOf(Pair("uid", System.getenv("FIREBASE_UID"))))
-                .setDatabaseUrl(System.getenv("FIREBASE_DB"))
                 .build())
 
-        firebaseDatabase = FirebaseDatabase.getInstance()
+        firestoreDb = FirestoreClient.getFirestore()
     }
 
-    fun uploadBillboard(billboardData: BillboardDto) {
-        val data = getDataFromBillboard(billboardData)
-        firebaseDatabase.getReference("v2").setValue(data) { databaseError, _ ->
-            if (databaseError != null) {
-                println("Data could not be saved " + databaseError.message)
-                System.exit(1)
-            } else {
-                println("Data saved successfully.")
-                System.exit(0)
-            }
+    fun uploadBillboard(billboardData: Billboard) {
+        val batch = firestoreDb.batch()
+
+        billboardData.cinemas.forEach {
+            batch.set(firestoreDb.collection("cinemas").document(it.id), it)
         }
-    }
 
-    private fun getDataFromBillboard(billboardData: BillboardDto): Any {
-        return mapOf(
-                Pair("billboard", billboardData.billboard),
-                Pair("cinemas", billboardData.cinemas.associate { it.id to it }),
-                Pair("movies", billboardData.movies.associate { it.id to it }),
-                Pair("last_update", DateTimeFormatter.ISO_INSTANT.format(NOW))
-        )
+        billboardData.movies.forEach {
+            batch.set(firestoreDb.collection("movies").document(it.id), it)
+        }
+
+        billboardData.sessions.forEach {
+            batch.set(firestoreDb.collection("sessions").document(it.id), it)
+        }
+
+        batch.commit().get()
+
+        println("Data saved successfully.")
+        System.exit(0)
     }
 }

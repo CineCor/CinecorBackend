@@ -5,8 +5,6 @@ import info.movito.themoviedbapi.model.MovieDb
 
 data class Movie(val id: String,
                  var title: String,
-                 var is3d: Boolean,
-                 var isVose: Boolean,
                  @Exclude var url: String,
                  var images: HashMap<String, String> = HashMap(),
                  var colors: HashMap<String, String> = HashMap(),

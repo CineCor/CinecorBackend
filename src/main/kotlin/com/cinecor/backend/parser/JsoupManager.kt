@@ -1,17 +1,17 @@
 package com.cinecor.backend.parser
 
 import com.cinecor.backend.Main.NOW
-import com.cinecor.backend.model.dto.CinemaDto
-import com.cinecor.backend.model.dto.MovieDto
-import com.cinecor.backend.model.dto.BillboardDto
+import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
+import com.cinecor.backend.model.Session
 import com.google.common.base.CharMatcher
 import org.jsoup.Jsoup
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URL
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 object JsoupManager {
@@ -19,9 +19,10 @@ object JsoupManager {
     private const val PARSE_TIMEOUT = 60000
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-    fun parseBillboard(): BillboardDto? {
-        val cinemas = ArrayList<CinemaDto>()
-        val movies = ArrayList<MovieDto>()
+    fun parseBillboard(): Billboard? {
+        val cinemas = ArrayList<Cinema>()
+        val movies = ArrayList<Movie>()
+        val sessions = ArrayList<Session>()
 
         try {
             val document = Jsoup.connect(System.getenv("PARSE_URL"))
@@ -32,30 +33,31 @@ object JsoupManager {
             val cinemasElements = document.select("div#bloqueportadaa")
             if (cinemasElements.isNotEmpty()) {
                 cinemasElements.forEach { cinemaElement ->
+                    val cinemaId = cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+                    val cinemaName = cinemaElement.select("h1 a").text()
+
                     val moviesElements = cinemaElement.select("div.pildora")
                     moviesElements.forEach { movieElement ->
                         val movieLink = movieElement.select("a")
                         if (movieLink.isNotEmpty()) {
-                            val id = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+                            val movieId = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                             val title = movieLink.first().text()
                             val hours = getHoursDateFromText(movieElement.select("h5").text())
                             val is3d = movieElement.select("h5").text().contains("3D")
                             val isVose = movieElement.select("h5").text().contains("V.O.S.E")
                             val url = movieLink.first().attr("abs:href")
 
-                            movies.add(MovieDto(id, title, hours, is3d, isVose, url))
+                            movies.add(movieId, title, url)
+                            sessions.add(NOW, movieId, cinemaId, hours, isVose, is3d)
                         }
                     }
 
                     if (moviesElements.select("a").isNotEmpty()) {
-                        val id = cinemaElement.select("a").first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                        val name = cinemaElement.select("h1 a").text()
-
-                        cinemas.add(CinemaDto(id, name, movies))
+                        cinemas.add(cinemaId, cinemaName)
                     }
                 }
 
-                return getBillBoard(cinemas.sorted(), movies)
+                return Billboard(cinemas, movies, sessions)
             } else {
                 println("Empty cinemas")
                 System.exit(0)
@@ -65,12 +67,6 @@ object JsoupManager {
             System.exit(0)
         }
         return null
-    }
-
-    private fun getBillBoard(cinemasDto: List<CinemaDto>, moviesDto: List<MovieDto>): BillboardDto {
-        val cinemas = cinemasDto.map { Cinema(it.id, it.name) }
-        val movies = moviesDto.map { Movie(it.id, it.title, it.is3d, it.isVose, it.url) }
-        return BillboardDto(cinemasDto, cinemas, movies)
     }
 
     private fun getHoursDateFromText(text: String): List<String> {
@@ -119,4 +115,17 @@ object JsoupManager {
 
         movie.images.put(Movie.Images.POSTER.name, posterBaseUrl)
     }
+}
+
+private fun ArrayList<Cinema>.add(cinemaId: String, cinemaName: String) {
+    add(Cinema(cinemaId, cinemaName))
+}
+
+private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) {
+    add(Movie(movieId, title, url))
+}
+
+private fun ArrayList<Session>.add(time: ZonedDateTime, movieId: String, cinemaId: String, hours: List<String>, isVose: Boolean, is3d: Boolean) {
+    val sessionId = DateTimeFormatter.BASIC_ISO_DATE.format(time).plus(movieId) // TODO Add map of types
+    add(Session(sessionId, cinemaId, movieId, hours, is3d, isVose))
 }
