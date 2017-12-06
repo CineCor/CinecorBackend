@@ -48,7 +48,7 @@ object JsoupManager {
                             val url = movieLink.first().attr("abs:href")
 
                             movies.add(movieId, title, url)
-                            sessions.add(NOW, movieId, cinemaId, hours, isVose, is3d)
+                            sessions.add(NOW, cinemaId, movieId, is3d, isVose, hours)
                         }
                     }
 
@@ -125,7 +125,18 @@ private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) {
     add(Movie(movieId, title, url))
 }
 
-private fun ArrayList<Session>.add(time: ZonedDateTime, movieId: String, cinemaId: String, hours: List<String>, isVose: Boolean, is3d: Boolean) {
-    val sessionId = DateTimeFormatter.BASIC_ISO_DATE.format(time).plus(movieId) // TODO Add map of types
-    add(Session(sessionId, cinemaId, movieId, hours, is3d, isVose))
+private fun ArrayList<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, hours: List<String>) {
+    val sessionId = DateTimeFormatter.ofPattern("YYYYMMdd").format(time).plus(cinemaId).plus(movieId)
+    val key = when {
+        is3d -> Session.HoursType.THREEDIM.toString()
+        isVose -> Session.HoursType.VOSE.toString()
+        else -> Session.HoursType.NORMAL.toString()
+    }
+
+    val foundSession = find { it.id == sessionId }
+    if (foundSession != null) {
+        foundSession.hours.put(key, hours)
+    } else {
+        add(Session(sessionId, cinemaId, movieId, hashMapOf(Pair(key, hours))))
+    }
 }

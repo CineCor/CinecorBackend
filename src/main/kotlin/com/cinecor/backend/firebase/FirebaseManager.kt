@@ -6,11 +6,6 @@ import com.google.cloud.firestore.Firestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
-import com.google.cloud.firestore.WriteBatch
-import com.google.api.core.ApiFuture
-
-
-
 
 
 class FirebaseManager {
