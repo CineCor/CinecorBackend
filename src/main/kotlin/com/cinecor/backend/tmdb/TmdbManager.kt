@@ -32,6 +32,13 @@ object TmdbManager {
                 fillColors(movie)
             }
         }
+
+        billboardData.sessions.forEach { session ->
+            billboardData.movies.find { it.id == session.movieId }?.let {
+                session.movieTitle = it.title
+                session.movieImages = it.images
+            }
+        }
     }
 
     private fun fillDataWithExistingMovie(originalMovie: Movie, movies: List<Movie>): Boolean {

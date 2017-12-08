@@ -6,9 +6,4 @@ data class Cinema(val id: String,
                   var image: String? = null,
                   var rooms: String? = null,
                   var phone: String? = null,
-                  var web: String? = null) : Comparable<Cinema> {
-
-    override fun compareTo(other: Cinema): Int
-            = compareValuesBy(this, other, { !it.name.contains("EL TABLERO") }, { !it.name.contains("GUADALQUIVIR") }, { it.id })
-
-}
+                  var web: String? = null)

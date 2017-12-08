@@ -80,7 +80,7 @@ object JsoupManager {
     }
 
     fun fillDataWithOriginalWeb(movie: Movie) {
-        println("Fetching Movie Data from Original Web...")
+        println("Fetching `" + movie.title + "` from original source...")
 
         try {
             val document = Jsoup.connect(movie.url)

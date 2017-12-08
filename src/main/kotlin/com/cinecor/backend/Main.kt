@@ -17,11 +17,11 @@ object Main {
         println("Initializing Firebase...")
         val firebaseManager = FirebaseManager()
 
-        println("Parsing Data...")
+        println("Parsing movies...")
         val billboardData = JsoupManager.parseBillboard()
 
         billboardData?.let {
-            println("Filling Movies Data...")
+            println("Filling movies data...")
             TmdbManager.fillMoviesData(billboardData)
 
             println("Writing to Firebase...")
