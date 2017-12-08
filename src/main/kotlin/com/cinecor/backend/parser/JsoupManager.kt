@@ -13,6 +13,7 @@ import java.net.URL
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 object JsoupManager {
 
@@ -47,8 +48,8 @@ object JsoupManager {
                             val isVose = movieElement.select("h5").text().contains("V.O.S.E")
                             val url = movieLink.first().attr("abs:href")
 
+                            if (hours.isNotEmpty()) sessions.add(NOW, cinemaId, movieId, is3d, isVose, hours)
                             movies.add(movieId, title, url)
-                            sessions.add(NOW, cinemaId, movieId, is3d, isVose, hours)
                         }
                     }
 
@@ -74,8 +75,10 @@ object JsoupManager {
                 .split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 .map { CharMatcher.digit().retainFrom(it) }
                 .filter { it.length >= 4 }
-                .map { LocalTime.parse(it.substring(0, 4), DateTimeFormatter.ofPattern("HHmm")) }
+                .map { it.substring(0, 4) }
+                .map { LocalTime.parse(it, DateTimeFormatter.ofPattern("HHmm")) }
                 .map { NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
+                .filter { it.isAfter(NOW) }
                 .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
 
