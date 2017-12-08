@@ -30,7 +30,7 @@ class FirebaseManager {
         val movies = firestoreDb.collection("movies")
         val sessions = firestoreDb.collection("sessions")
 
-        sessions.whereLessThan("id", DateTimeFormatter.ofPattern("YYYYMMdd").format(NOW)).get().get().documents.forEach {
+        sessions.whereLessThan("id", DateTimeFormatter.ofPattern("YYYYMMdd").format(NOW).plus("00000")).get().get().documents.forEach {
             batch.delete(sessions.document(it.id))
         }
 
