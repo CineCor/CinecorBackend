@@ -18,11 +18,11 @@ object TmdbManager {
     private const val TMDB_LANGUAGE = "es-ES"
     private val tmdbApi = TmdbApi(System.getenv("TMDB_API_KEY"))
 
-    fun fillMoviesData(billboardData: Billboard) {
+    fun fillMoviesData(billboardData: Billboard, remoteMovies: List<Movie>) {
         billboardData.movies.forEach { movie ->
-            if (!fillDataWithExistingMovie(movie, billboardData.movies)) {
+            if (!fillDataWithExistingMovies(movie, billboardData.movies, remoteMovies)) {
                 if (!fillDataWithExternalApi(movie) || movie.overview.isBlank()) {
-                    JsoupManager.fillDataWithOriginalWeb(movie)
+                    JsoupManager.fillDataWithOriginalSource(movie)
                 }
 
                 if (!movie.images.containsKey(Movie.Images.POSTER.name)) {
@@ -41,12 +41,14 @@ object TmdbManager {
         }
     }
 
-    private fun fillDataWithExistingMovie(originalMovie: Movie, movies: List<Movie>): Boolean {
-        movies.forEach { movie ->
-            if (movie.id == originalMovie.id && movie.overview.isNotBlank()) {
-                originalMovie.copy(movie)
-                return true
-            }
+    private fun fillDataWithExistingMovies(movie: Movie, localMovies: List<Movie>, remoteMovies: List<Movie>): Boolean {
+        remoteMovies.find { it.id == movie.id && it.overview.isNotBlank() }?.let {
+            movie.copy(it)
+            return true
+        }
+        localMovies.find { it.id == movie.id && it.overview.isNotBlank() }?.let {
+            movie.copy(it)
+            return true
         }
         return false
     }

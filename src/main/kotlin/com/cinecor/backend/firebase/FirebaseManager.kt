@@ -2,6 +2,7 @@ package com.cinecor.backend.firebase
 
 import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
+import com.cinecor.backend.model.Movie
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.SetOptions
@@ -15,6 +16,10 @@ class FirebaseManager {
 
     private val firestoreDb: Firestore
 
+    private val COLLECTION_CINEMAS = "cinemas"
+    private val COLLECTION_MOVIES = "movies"
+    private val COLLECTION_SESSIONS = "sessions"
+
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(System.getenv("FIREBASE_KEY").byteInputStream()))
@@ -26,13 +31,9 @@ class FirebaseManager {
 
     fun uploadBillboard(billboardData: Billboard) {
         val batch = firestoreDb.batch()
-        val cinemas = firestoreDb.collection("cinemas")
-        val movies = firestoreDb.collection("movies")
-        val sessions = firestoreDb.collection("sessions")
-
-        sessions.whereLessThan("id", DateTimeFormatter.ofPattern("YYYYMMdd").format(NOW).plus("00000")).get().get().documents.forEach {
-            batch.delete(sessions.document(it.id))
-        }
+        val cinemas = firestoreDb.collection(COLLECTION_CINEMAS)
+        val movies = firestoreDb.collection(COLLECTION_MOVIES)
+        val sessions = firestoreDb.collection(COLLECTION_SESSIONS)
 
         billboardData.cinemas.forEach {
             batch.set(cinemas.document(it.id), it, SetOptions.mergeFields("id", "name"))
@@ -40,6 +41,11 @@ class FirebaseManager {
 
         billboardData.movies.forEach {
             batch.set(movies.document(it.id), it)
+        }
+
+        val earlierSessionId = DateTimeFormatter.ofPattern("YYYYMMdd").format(NOW).plus("00000")
+        sessions.whereLessThan("id", earlierSessionId).get().get().documents.forEach {
+            batch.delete(sessions.document(it.id))
         }
 
         billboardData.sessions.forEach {
@@ -50,5 +56,9 @@ class FirebaseManager {
 
         println("Data saved successfully.")
         System.exit(0)
+    }
+
+    fun getRemoteMovies(): List<Movie> {
+        return firestoreDb.collection(COLLECTION_MOVIES).get().get().documents.map { it.toObject(Movie::class.java) }
     }
 }

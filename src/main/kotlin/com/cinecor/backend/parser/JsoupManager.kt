@@ -82,7 +82,7 @@ object JsoupManager {
                 .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
 
-    fun fillDataWithOriginalWeb(movie: Movie) {
+    fun fillDataWithOriginalSource(movie: Movie) {
         println("Fetching `" + movie.title + "` from original source...")
 
         try {
@@ -129,7 +129,8 @@ private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) {
 }
 
 private fun ArrayList<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, hours: List<String>) {
-    val sessionId = DateTimeFormatter.ofPattern("YYYYMMdd").format(time).plus(cinemaId).plus(movieId)
+    val sessionTime = DateTimeFormatter.ofPattern("YYYYMMdd").format(time)
+    val sessionId = sessionTime.plus(cinemaId).plus(movieId)
     val key = when {
         is3d -> Session.HoursType.THREEDIM.toString()
         isVose -> Session.HoursType.VOSE.toString()
@@ -140,6 +141,6 @@ private fun ArrayList<Session>.add(time: ZonedDateTime, cinemaId: String, movieI
     if (foundSession != null) {
         foundSession.hours.put(key, hours)
     } else {
-        add(Session(sessionId, cinemaId, movieId, hashMapOf(Pair(key, hours))))
+        add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(key, hours))))
     }
 }

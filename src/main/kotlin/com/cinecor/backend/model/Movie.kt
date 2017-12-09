@@ -3,9 +3,9 @@ package com.cinecor.backend.model
 import com.google.firebase.database.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
-data class Movie(val id: String,
-                 var title: String,
-                 @Exclude var url: String,
+data class Movie(val id: String = "",
+                 var title: String = "",
+                 @Exclude var url: String = "",
                  var images: HashMap<String, String> = HashMap(),
                  var colors: HashMap<String, String> = HashMap(),
                  var overview: String = "",

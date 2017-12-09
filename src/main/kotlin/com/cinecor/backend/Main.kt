@@ -22,7 +22,7 @@ object Main {
 
         billboardData?.let {
             println("Filling movies data...")
-            TmdbManager.fillMoviesData(billboardData)
+            TmdbManager.fillMoviesData(billboardData, firebaseManager.getRemoteMovies())
 
             println("Writing to Firebase...")
             firebaseManager.uploadBillboard(billboardData)
