@@ -1,8 +1,8 @@
 package com.cinecor.backend
 
-import com.cinecor.backend.firebase.FirebaseManager
+import com.cinecor.backend.db.FirebaseManager
 import com.cinecor.backend.parser.JsoupManager
-import com.cinecor.backend.tmdb.TmdbManager
+import com.cinecor.backend.api.TmdbManager
 import java.time.ZoneId
 import java.time.ZonedDateTime
 

@@ -1,15 +1,15 @@
-package com.cinecor.backend.firebase
+package com.cinecor.backend.db
 
 import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
+import com.cinecor.backend.utils.DateUtils
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.SetOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
-import java.time.format.DateTimeFormatter
 
 
 class FirebaseManager {
@@ -43,7 +43,7 @@ class FirebaseManager {
             batch.set(movies.document(it.id), it)
         }
 
-        val earlierSessionId = DateTimeFormatter.ofPattern("YYYYMMdd").format(NOW).plus("00000")
+        val earlierSessionId = DateUtils.DATE_FORMAT_SIMPLE.format(NOW).plus("00000")
         sessions.whereLessThan("id", earlierSessionId).get().get().documents.forEach {
             batch.delete(sessions.document(it.id))
         }

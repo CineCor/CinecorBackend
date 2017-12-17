@@ -5,14 +5,12 @@ import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.cinecor.backend.model.Session
-import com.google.common.base.CharMatcher
+import com.cinecor.backend.utils.DateUtils
 import org.jsoup.Jsoup
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URL
-import java.time.LocalTime
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 object JsoupManager {
@@ -43,7 +41,7 @@ object JsoupManager {
                         if (movieLink.isNotEmpty()) {
                             val movieId = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                             val title = movieLink.first().text()
-                            val hours = getHoursDateFromText(movieElement.select("h5").text())
+                            val hours = DateUtils.getFormattedDatesFromHoursText(movieElement.select("h5").text())
                             val is3d = movieElement.select("h5").text().contains("3D")
                             val isVose = movieElement.select("h5").text().contains("V.O.S.E")
                             val url = movieLink.first().attr("abs:href")
@@ -70,19 +68,7 @@ object JsoupManager {
         return null
     }
 
-    private fun getHoursDateFromText(text: String): List<String> {
-        return text
-                .split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                .map { CharMatcher.digit().retainFrom(it) }
-                .filter { it.length >= 4 }
-                .map { it.substring(0, 4) }
-                .map { LocalTime.parse(it, DateTimeFormatter.ofPattern("HHmm")) }
-                .map { NOW.plusDays(if (it.hour < 8) 1 else 0).withHour(it.hour).withMinute(it.minute) }
-                .filter { it.isAfter(NOW) }
-                .map { DateTimeFormatter.ISO_INSTANT.format(it) }
-    }
-
-    fun fillDataWithOriginalSource(movie: Movie) {
+    fun fillBasicDataWithOriginalSource(movie: Movie) {
         println("Fetching `" + movie.title + "` from original source...")
 
         try {
@@ -94,11 +80,13 @@ object JsoupManager {
             val movieDetails = document.select("div#sobrepelicula h5")
             if (!movieDetails.isEmpty()) {
                 movieDetails.indices.forEach { i ->
+                    val movieDetail = movieDetails[i].text()
                     if (i == 0) {
-                        movie.rawDescription = movieDetails[i].text()
+                        movie.rawDescription = movieDetail
+                        movie.releaseDate = DateUtils.getFormattedReleaseDateFromRawText(movieDetail)
                     }
                     if (i == 1) {
-                        movie.overview = movieDetails[i].text()
+                        movie.overview = movieDetail
                     }
                 }
             }
@@ -118,29 +106,29 @@ object JsoupManager {
 
         movie.images.put(Movie.Images.POSTER.name, posterBaseUrl)
     }
-}
 
-private fun ArrayList<Cinema>.add(cinemaId: String, cinemaName: String) {
-    add(Cinema(cinemaId, cinemaName))
-}
-
-private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) {
-    add(Movie(movieId, title, url))
-}
-
-private fun ArrayList<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, hours: List<String>) {
-    val sessionTime = DateTimeFormatter.ofPattern("YYYYMMdd").format(time)
-    val sessionId = sessionTime.plus(cinemaId).plus(movieId)
-    val key = when {
-        is3d -> Session.HoursType.THREEDIM.toString()
-        isVose -> Session.HoursType.VOSE.toString()
-        else -> Session.HoursType.NORMAL.toString()
+    private fun ArrayList<Cinema>.add(cinemaId: String, cinemaName: String) {
+        add(Cinema(cinemaId, cinemaName))
     }
 
-    val foundSession = find { it.id == sessionId }
-    if (foundSession != null) {
-        foundSession.hours.put(key, hours)
-    } else {
-        add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(key, hours))))
+    private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) {
+        add(Movie(movieId, title, url))
+    }
+
+    private fun ArrayList<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, hours: List<String>) {
+        val sessionTime = DateUtils.DATE_FORMAT_SIMPLE.format(time)
+        val sessionId = sessionTime.plus(cinemaId).plus(movieId)
+        val key = when {
+            is3d -> Session.HoursType.THREEDIM.toString()
+            isVose -> Session.HoursType.VOSE.toString()
+            else -> Session.HoursType.NORMAL.toString()
+        }
+
+        val foundSession = find { it.id == sessionId }
+        if (foundSession != null) {
+            foundSession.hours.put(key, hours)
+        } else {
+            add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(key, hours))))
+        }
     }
 }

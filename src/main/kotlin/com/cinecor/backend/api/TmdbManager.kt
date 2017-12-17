@@ -1,16 +1,19 @@
-package com.cinecor.backend.tmdb
+package com.cinecor.backend.api
 
 import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
 import com.cinecor.backend.parser.JsoupManager
+import com.cinecor.backend.utils.DateUtils
 import com.vivekpanyam.iris.Bitmap
 import com.vivekpanyam.iris.Color
 import com.vivekpanyam.iris.Palette
 import info.movito.themoviedbapi.TmdbApi
 import info.movito.themoviedbapi.TmdbMovies
+import info.movito.themoviedbapi.model.core.MovieResultsPage
 import java.io.IOException
 import java.net.URL
+import java.time.ZonedDateTime
 import javax.imageio.ImageIO
 
 object TmdbManager {
@@ -19,11 +22,12 @@ object TmdbManager {
     private val tmdbApi = TmdbApi(System.getenv("TMDB_API_KEY"))
 
     fun fillMoviesData(billboardData: Billboard, remoteMovies: List<Movie>) {
-        billboardData.movies.forEach { movie ->
-            if (!fillDataWithExistingMovies(movie, billboardData.movies, remoteMovies)) {
-                if (!fillDataWithExternalApi(movie) || movie.overview.isBlank()) {
-                    JsoupManager.fillDataWithOriginalSource(movie)
-                }
+        val localMovies = billboardData.movies
+        localMovies.forEach { movie ->
+            if (!fillDataWithExistingMovies(movie, localMovies, remoteMovies)) {
+                JsoupManager.fillBasicDataWithOriginalSource(movie)
+
+                fillDataWithApi(movie)
 
                 if (!movie.images.containsKey(Movie.Images.POSTER.name)) {
                     JsoupManager.fillPosterImage(movie)
@@ -34,7 +38,7 @@ object TmdbManager {
         }
 
         billboardData.sessions.forEach { session ->
-            billboardData.movies.find { it.id == session.movieId }?.let {
+            localMovies.find { it.id == session.movieId }?.let {
                 session.movieTitle = it.title
                 session.movieImages = it.images
             }
@@ -53,18 +57,24 @@ object TmdbManager {
         return false
     }
 
-    private fun fillDataWithExternalApi(movie: Movie): Boolean {
-        var movieResults = searchMovie(movie.title, NOW.year)
+    private fun fillDataWithApi(movie: Movie): Boolean {
+        var movieResults = MovieResultsPage()
+
+        if (movie.releaseDate != null) {
+            movieResults = searchMovie(movie.title, ZonedDateTime.from(DateUtils.DATE_FORMAT_ISO.parse(movie.releaseDate)).year)
+        }
+
+        if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, NOW.year)
         if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, NOW.year - 1)
         if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, 0)
         if (movieResults.totalResults != 0) {
-            var movieDb = movieResults.results[0]
-            if (movieDb.overview.isBlank() && movieResults.totalResults > 1) {
-                movieDb = movieResults.results[1]
+            val movieApi = if (movieResults.results[0].overview.isBlank() && movieResults.totalResults > 1) {
+                movieResults.results[1]
+            } else {
+                movieResults.results[0]
             }
 
-            val movieApi = tmdbApi.movies.getMovie(movieDb.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)
-            movieApi?.let {
+            tmdbApi.movies.getMovie(movieApi.id, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)?.let {
                 movie.copy(it)
                 return true
             }
@@ -72,13 +82,15 @@ object TmdbManager {
         return false
     }
 
+    private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
+
     private fun fillColors(movie: Movie) {
         if (movie.images.isEmpty()) return
         val url = movie.images.getOrDefault(Movie.Images.BACKDROP_THUMBNAIL.name, movie.images[Movie.Images.POSTER.name])
-        getMovieColorsFromUrl(url)?.let { movie.colors = it }
+        getMovieColorsFromImageUrl(url)?.let { movie.colors = it }
     }
 
-    private fun getMovieColorsFromUrl(url: String?): HashMap<String, String>? {
+    private fun getMovieColorsFromImageUrl(url: String?): HashMap<String, String>? {
         try {
             val palette = Palette.Builder(Bitmap(ImageIO.read(URL(url)))).generate()
             palette?.let {
@@ -87,9 +99,9 @@ object TmdbManager {
                 if (swatch == null) swatch = palette.dominantSwatch
 
                 return hashMapOf(
-                        Pair(Movie.Colors.MAIN.name, swatch.rgb.formatedColor()),
-                        Pair(Movie.Colors.TITLE.name, swatch.titleTextColor.formatedColor()),
-                        Pair(Movie.Colors.BODY.name, swatch.bodyTextColor.formatedColor())
+                        Pair(Movie.Colors.MAIN.name, swatch.rgb.formattedColor()),
+                        Pair(Movie.Colors.TITLE.name, swatch.titleTextColor.formattedColor()),
+                        Pair(Movie.Colors.BODY.name, swatch.bodyTextColor.formattedColor())
                 )
             }
         } catch (e: IOException) {
@@ -98,7 +110,5 @@ object TmdbManager {
         return null
     }
 
-    private fun searchMovie(title: String, year: Int) = tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)
-
-    private fun Int.formatedColor() = String.format("#%02x%02x%02x%02x", Color.red(this), Color.green(this), Color.blue(this), Color.alpha(this))
+    private fun Int.formattedColor() = String.format("#%02x%02x%02x%02x", Color.red(this), Color.green(this), Color.blue(this), Color.alpha(this))
 }
