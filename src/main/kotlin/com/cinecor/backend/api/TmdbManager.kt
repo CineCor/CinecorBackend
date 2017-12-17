@@ -4,7 +4,6 @@ import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
 import com.cinecor.backend.parser.JsoupManager
-import com.cinecor.backend.utils.DateUtils
 import com.vivekpanyam.iris.Bitmap
 import com.vivekpanyam.iris.Color
 import com.vivekpanyam.iris.Palette
@@ -13,7 +12,6 @@ import info.movito.themoviedbapi.TmdbMovies
 import info.movito.themoviedbapi.model.core.MovieResultsPage
 import java.io.IOException
 import java.net.URL
-import java.time.ZonedDateTime
 import javax.imageio.ImageIO
 
 object TmdbManager {
@@ -60,10 +58,7 @@ object TmdbManager {
     private fun fillDataWithApi(movie: Movie): Boolean {
         var movieResults = MovieResultsPage()
 
-        if (movie.releaseDate != null) {
-            movieResults = searchMovie(movie.title, ZonedDateTime.from(DateUtils.DATE_FORMAT_ISO.parse(movie.releaseDate)).year)
-        }
-
+        movie.year?.let { movieResults = searchMovie(movie.title, it) }
         if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, NOW.year)
         if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, NOW.year - 1)
         if (movieResults.totalResults == 0) movieResults = searchMovie(movie.title, 0)

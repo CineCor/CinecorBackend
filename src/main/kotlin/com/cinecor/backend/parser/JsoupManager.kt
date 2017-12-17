@@ -80,13 +80,14 @@ object JsoupManager {
             val movieDetails = document.select("div#sobrepelicula h5")
             if (!movieDetails.isEmpty()) {
                 movieDetails.indices.forEach { i ->
-                    val movieDetail = movieDetails[i].text()
+                    val movieDetail = movieDetails[i]
                     if (i == 0) {
-                        movie.rawDescription = movieDetail
-                        movie.releaseDate = DateUtils.getFormattedReleaseDateFromRawText(movieDetail)
+                        movie.rawDescription = movieDetail.text()
+                        movie.year = DateUtils.getFormattedYearFromRawText(movieDetail.html())
                     }
                     if (i == 1) {
-                        movie.overview = movieDetail
+                        movie.overview = movieDetail.text()
+                        return
                     }
                 }
             }

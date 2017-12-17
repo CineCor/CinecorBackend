@@ -1,11 +1,11 @@
 package com.cinecor.backend.model
 
-import com.google.firebase.database.Exclude
+import com.google.cloud.firestore.annotation.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
 data class Movie(val id: String = "",
                  var title: String = "",
-                 @Exclude var url: String = "",
+                 @get:Exclude var url: String = "",
                  var images: HashMap<String, String> = HashMap(),
                  var colors: HashMap<String, String> = HashMap(),
                  var overview: String = "",
@@ -14,11 +14,12 @@ data class Movie(val id: String = "",
                  var duration: Int? = null,
                  var trailer: String? = null,
                  var releaseDate: String? = null,
+                 @get:Exclude var year: Int? = null,
                  var genres: List<String>? = null,
                  var rawDescription: String? = null) {
 
-    enum class Images {POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
-    enum class Colors {MAIN, TITLE, BODY }
+    enum class Images { POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
+    enum class Colors { MAIN, TITLE, BODY }
 
     fun copy(movie: Movie) {
         movie.title.let { this.title = it }
