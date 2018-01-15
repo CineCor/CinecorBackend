@@ -2,7 +2,7 @@ group 'com.cinecor.backend'
 version '1.0'
 
 buildscript {
-    ext.kotlin_version = '1.2.0'
+    ext.kotlin_version = '1.2.10'
 
     repositories {
         mavenCentral()
@@ -10,7 +10,7 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.1"
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.2"
     }
 }
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-    compile "com.google.firebase:firebase-admin:5.5.0"
+    compile "com.google.firebase:firebase-admin:5.8.0"
     compile "org.jsoup:jsoup:1.11.2"
     compile "info.movito:themoviedbapi:1.6"
     compile "com.loyalsound:iris:1.1"

@@ -72,7 +72,7 @@ object JsoupManager {
         println("Fetching `" + movie.title + "` from original source...")
 
         try {
-            val document = Jsoup.connect(movie.url)
+            val document = Jsoup.connect(movie.originalUrl)
                     .userAgent(PARSE_USER_AGENT)
                     .timeout(PARSE_TIMEOUT)
                     .get()
@@ -83,7 +83,8 @@ object JsoupManager {
                     val movieDetail = movieDetails[i]
                     if (i == 0) {
                         movie.rawDescription = movieDetail.text()
-                        movie.year = DateUtils.getFormattedYearFromRawText(movieDetail.html())
+                        getFieldFromRawHtml(movieDetail.html(), "Año")?.let { movie.year = it.toInt() }
+                        getFieldFromRawHtml(movieDetail.html(), "Título original")?.let { movie.originalTitle = it }
                     }
                     if (i == 1) {
                         movie.overview = movieDetail.text()
@@ -108,13 +109,19 @@ object JsoupManager {
         movie.images.put(Movie.Images.POSTER.name, posterBaseUrl)
     }
 
-    private fun ArrayList<Cinema>.add(cinemaId: String, cinemaName: String) {
-        add(Cinema(cinemaId, cinemaName))
-    }
+    private fun getFieldFromRawHtml(html: String, field: String): String? =
+            if (html.contains(field))
+                html.split("<br>")
+                        .find { it.contains(field) }!!
+                        .split("</b>")[1]
+                        .trim()
+            else null
 
-    private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) {
-        add(Movie(movieId, title, url))
-    }
+    private fun ArrayList<Cinema>.add(cinemaId: String, cinemaName: String) =
+            add(Cinema(cinemaId, cinemaName))
+
+    private fun ArrayList<Movie>.add(movieId: String, title: String, url: String) =
+            add(Movie(movieId, title, url))
 
     private fun ArrayList<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, hours: List<String>) {
         val sessionTime = DateUtils.DATE_FORMAT_SIMPLE.format(time)

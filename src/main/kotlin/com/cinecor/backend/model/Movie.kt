@@ -5,7 +5,7 @@ import info.movito.themoviedbapi.model.MovieDb
 
 data class Movie(val id: String = "",
                  var title: String = "",
-                 @get:Exclude var url: String = "",
+                 @get:Exclude var originalUrl: String = "",
                  var images: HashMap<String, String> = HashMap(),
                  var colors: HashMap<String, String> = HashMap(),
                  var overview: String = "",
@@ -14,16 +14,17 @@ data class Movie(val id: String = "",
                  var duration: Int? = null,
                  var trailer: String? = null,
                  var releaseDate: String? = null,
-                 @get:Exclude var year: Int? = null,
                  var genres: List<String>? = null,
-                 var rawDescription: String? = null) {
+                 var rawDescription: String? = null,
+                 @get:Exclude var year: Int? = null,
+                 @get:Exclude var originalTitle: String? = null) {
 
     enum class Images { POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
     enum class Colors { MAIN, TITLE, BODY }
 
     fun copy(movie: Movie) {
         movie.title.let { this.title = it }
-        movie.url.let { this.url = it }
+        movie.originalUrl.let { this.originalUrl = it }
         movie.images.let { this.images = it }
         movie.colors.let { this.colors = it }
         movie.overview.let { this.overview = it }

@@ -22,14 +22,4 @@ object DateUtils {
                 .filter { it.isAfter(Main.NOW) }
                 .map { DateTimeFormatter.ISO_INSTANT.format(it) }
     }
-
-    fun getFormattedYearFromRawText(rawText: String): Int? {
-        if (!rawText.contains("Año")) return null
-        return rawText
-                .split("<br>")
-                .find { it.contains("Año") }!!
-                .split("</b>")[1]
-                .trim()
-                .toInt()
-    }
 }
