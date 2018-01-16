@@ -68,11 +68,11 @@ object JsoupManager {
         return null
     }
 
-    fun fillBasicDataWithOriginalSource(movie: Movie) {
-        println("Fetching `" + movie.title + "` from original source...")
+    fun Movie.fillBasicDataWithOriginalSource() {
+        println("Fetching `$title` from original source...")
 
         try {
-            val document = Jsoup.connect(movie.originalUrl)
+            val document = Jsoup.connect(originalUrl)
                     .userAgent(PARSE_USER_AGENT)
                     .timeout(PARSE_TIMEOUT)
                     .get()
@@ -82,12 +82,12 @@ object JsoupManager {
                 movieDetails.indices.forEach { i ->
                     val movieDetail = movieDetails[i]
                     if (i == 0) {
-                        movie.rawDescription = movieDetail.text()
-                        getFieldFromRawHtml(movieDetail.html(), "Año")?.let { movie.year = it.toInt() }
-                        getFieldFromRawHtml(movieDetail.html(), "Título original")?.let { movie.originalTitle = it }
+                        rawDescription = movieDetail.text()
+                        getFieldFromRawHtml(movieDetail.html(), "Año")?.let { year = it.toInt() }
+                        getFieldFromRawHtml(movieDetail.html(), "Título original")?.let { originalTitle = it }
                     }
                     if (i == 1) {
-                        movie.overview = movieDetail.text()
+                        overview = movieDetail.text()
                         return
                     }
                 }
@@ -97,8 +97,10 @@ object JsoupManager {
         }
     }
 
-    fun fillPosterImage(movie: Movie) {
-        var posterBaseUrl = System.getenv("PARSE_URL") + "gestor/ficheros/imagen${movie.id}.jpeg"
+    fun Movie.fillPosterImageIfNeeded() {
+        if (images.containsKey(Movie.Images.POSTER.name)) return
+
+        var posterBaseUrl = "${System.getenv("PARSE_URL")}gestor/ficheros/imagen$id.jpeg"
 
         try {
             URL(posterBaseUrl).readText()
@@ -106,7 +108,7 @@ object JsoupManager {
             if (e is FileNotFoundException) posterBaseUrl = posterBaseUrl.replace("jpeg", "jpg")
         }
 
-        movie.images.put(Movie.Images.POSTER.name, posterBaseUrl)
+        images.put(Movie.Images.POSTER.name, posterBaseUrl)
     }
 
     private fun getFieldFromRawHtml(html: String, field: String): String? =

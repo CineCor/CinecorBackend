@@ -31,6 +31,7 @@ class FirebaseManager {
 
     fun uploadBillboard(billboardData: Billboard) {
         val batch = firestoreDb.batch()
+
         val cinemas = firestoreDb.collection(COLLECTION_CINEMAS)
         val movies = firestoreDb.collection(COLLECTION_MOVIES)
         val sessions = firestoreDb.collection(COLLECTION_SESSIONS)
@@ -58,7 +59,6 @@ class FirebaseManager {
         System.exit(0)
     }
 
-    fun getRemoteMovies(): List<Movie> {
-        return firestoreDb.collection(COLLECTION_MOVIES).get().get().documents.map { it.toObject(Movie::class.java) }
-    }
+    fun getRemoteMovies(): List<Movie> =
+        firestoreDb.collection(COLLECTION_MOVIES).get().get().documents.map { it.toObject(Movie::class.java) }
 }
