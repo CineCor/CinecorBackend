@@ -15,7 +15,7 @@ data class Movie(val id: String = "",
                  var trailer: String? = null,
                  var releaseDate: String? = null,
                  var genres: List<String>? = null,
-                 var rawDescription: String? = null,
+                 var raw: String? = null,
                  @get:Exclude var year: Int? = null,
                  @get:Exclude var originalTitle: String? = null) {
 
@@ -34,13 +34,13 @@ data class Movie(val id: String = "",
         movie.trailer?.let { this.trailer = it }
         movie.releaseDate?.let { this.releaseDate = it }
         movie.genres?.let { this.genres = it }
-        movie.rawDescription?.let { this.rawDescription = it }
+        movie.raw?.let { this.raw = it }
     }
 
     fun copy(movieDb: MovieDb) {
         movieDb.title?.let { this.title = it }
         movieDb.overview?.let { this.overview = it }
-        movieDb.imdbID?.let { this.imdb = "http://www.imdb.com/title/" + it }
+        movieDb.imdbID?.let { this.imdb = "http://www.imdb.com/title/$it" }
         movieDb.voteAverage.let { this.rating = it }
         movieDb.runtime.let { this.duration = it }
         movieDb.releaseDate?.let { this.releaseDate = it }
@@ -48,20 +48,20 @@ data class Movie(val id: String = "",
         movieDb.videos?.let { videos ->
             if (videos.isNotEmpty()) {
                 videos.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let {
-                    this.trailer = "https://www.youtube.com/watch?v=" + it
+                    this.trailer = "https://www.youtube.com/watch?v=$it"
                 }
             }
         }
         movieDb.posterPath?.let { path ->
             if (path.isNotBlank()) {
-                this.images.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780" + path)
-                this.images.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92" + path)
+                this.images.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780$path")
+                this.images.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92$path")
             }
         }
         movieDb.backdropPath?.let { path ->
             if (path.isNotBlank()) {
-                this.images.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780" + path)
-                this.images.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300" + path)
+                this.images.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780$path")
+                this.images.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300$path")
             }
         }
     }

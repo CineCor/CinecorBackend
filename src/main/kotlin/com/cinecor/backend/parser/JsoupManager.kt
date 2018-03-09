@@ -7,9 +7,6 @@ import com.cinecor.backend.model.Movie
 import com.cinecor.backend.model.Session
 import com.cinecor.backend.utils.DateUtils
 import org.jsoup.Jsoup
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.net.URL
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -77,17 +74,23 @@ object JsoupManager {
                     .timeout(PARSE_TIMEOUT)
                     .get()
 
-            val movieDetails = document.select("div#sobrepelicula h5")
-            if (!movieDetails.isEmpty()) {
-                movieDetails.indices.forEach { i ->
-                    val movieDetail = movieDetails[i]
+            val movieDetails = document.select("div#sobrepelicula")
+
+            val movieImage = movieDetails.select("img")
+            if (movieImage.isNotEmpty()) {
+                images[Movie.Images.POSTER.name] = movieImage.first().absUrl("src")
+            }
+
+            val movieDescription = movieDetails.select("h5")
+            if (movieDescription.isNotEmpty()) {
+                movieDescription.indices.forEach { i ->
+                    val movieRaw = movieDescription[i]
                     if (i == 0) {
-                        rawDescription = movieDetail.text()
-                        getFieldFromRawHtml(movieDetail.html(), "Año")?.let { year = it.toInt() }
-                        getFieldFromRawHtml(movieDetail.html(), "Título original")?.let { originalTitle = it }
-                    }
-                    if (i == 1) {
-                        overview = movieDetail.text()
+                        raw = movieRaw.text()
+                        getFieldFromRawHtml(movieRaw.html(), "Año")?.let { year = it.toInt() }
+                        getFieldFromRawHtml(movieRaw.html(), "Título original")?.let { originalTitle = it }
+                    } else if (i == 1) {
+                        overview = movieRaw.text()
                         return
                     }
                 }
@@ -95,20 +98,6 @@ object JsoupManager {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    fun Movie.fillPosterImageIfNeeded() {
-        if (images.containsKey(Movie.Images.POSTER.name)) return
-
-        var posterBaseUrl = "${System.getenv("PARSE_URL")}gestor/ficheros/imagen$id.jpeg"
-
-        try {
-            URL(posterBaseUrl).readText()
-        } catch (e: IOException) {
-            if (e is FileNotFoundException) posterBaseUrl = posterBaseUrl.replace("jpeg", "jpg")
-        }
-
-        images.put(Movie.Images.POSTER.name, posterBaseUrl)
     }
 
     private fun getFieldFromRawHtml(html: String, field: String): String? =

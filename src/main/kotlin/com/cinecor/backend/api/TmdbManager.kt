@@ -4,7 +4,6 @@ import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
 import com.cinecor.backend.parser.JsoupManager.fillBasicDataWithOriginalSource
-import com.cinecor.backend.parser.JsoupManager.fillPosterImageIfNeeded
 import com.vivekpanyam.iris.Bitmap
 import com.vivekpanyam.iris.Color
 import com.vivekpanyam.iris.Palette
@@ -25,7 +24,6 @@ object TmdbManager {
             if (!movie.fillDataWithExistingMovies(billboardData.movies, remoteMovies)) {
                 movie.fillBasicDataWithOriginalSource()
                 movie.fillDataWithExternalApi()
-                movie.fillPosterImageIfNeeded()
                 movie.fillColors()
             }
         }
@@ -39,14 +37,12 @@ object TmdbManager {
     }
 
     private fun Movie.fillDataWithExistingMovies(localMovies: List<Movie>, remoteMovies: List<Movie>): Boolean {
-        remoteMovies.find { it.id == id && it.overview.isNotBlank() }?.let {
-            copy(it)
-            return true
-        }
-        localMovies.find { it.id == id && it.overview.isNotBlank() }?.let {
-            copy(it)
-            return true
-        }
+        remoteMovies.plus(localMovies)
+                .filter { it.overview.isNotBlank() }
+                .find { it.id == id }?.let {
+                    copy(it)
+                    return true
+                }
         return false
     }
 
