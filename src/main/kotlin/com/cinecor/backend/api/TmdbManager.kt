@@ -36,7 +36,7 @@ object TmdbManager {
         }
     }
 
-    private fun Movie.fillDataWithExistingMovies(localMovies: List<Movie>, remoteMovies: List<Movie>): Boolean {
+    private fun Movie.fillDataWithExistingMovies(localMovies: MutableSet<Movie>, remoteMovies: List<Movie>): Boolean {
         remoteMovies.plus(localMovies)
                 .filter { it.overview.isNotBlank() }
                 .find { it.id == id }?.let {

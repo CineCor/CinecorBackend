@@ -52,16 +52,18 @@ data class Movie(val id: String = "",
                 }
             }
         }
+
         movieDb.posterPath?.let { path ->
             if (path.isNotBlank()) {
-                this.images.put(Movie.Images.POSTER.name, "http://image.tmdb.org/t/p/w780$path")
-                this.images.put(Movie.Images.POSTER_THUMBNAIL.name, "http://image.tmdb.org/t/p/w92$path")
+                this.images[Movie.Images.POSTER.name] = "http://image.tmdb.org/t/p/w780$path"
+                this.images[Movie.Images.POSTER_THUMBNAIL.name] = "http://image.tmdb.org/t/p/w92$path"
             }
         }
+
         movieDb.backdropPath?.let { path ->
             if (path.isNotBlank()) {
-                this.images.put(Movie.Images.BACKDROP.name, "http://image.tmdb.org/t/p/w780$path")
-                this.images.put(Movie.Images.BACKDROP_THUMBNAIL.name, "http://image.tmdb.org/t/p/w300$path")
+                this.images[Movie.Images.BACKDROP.name] = "http://image.tmdb.org/t/p/w780$path"
+                this.images[Movie.Images.BACKDROP_THUMBNAIL.name] = "http://image.tmdb.org/t/p/w300$path"
             }
         }
     }

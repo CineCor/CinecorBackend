@@ -44,7 +44,7 @@ class FirebaseManager {
             batch.set(movies.document(it.id), it)
         }
 
-        val earlierSessionId = DateUtils.DATE_FORMAT_SIMPLE.format(NOW).plus("00000")
+        val earlierSessionId = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(NOW).plus("00000")
         sessions.whereLessThan("id", earlierSessionId).get().get().documents.forEach {
             batch.delete(sessions.document(it.id))
         }
