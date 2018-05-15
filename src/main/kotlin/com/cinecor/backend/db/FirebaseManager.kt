@@ -14,16 +14,21 @@ import com.google.firebase.cloud.FirestoreClient
 
 class FirebaseManager {
 
-    private val firestoreDb: Firestore
+    companion object {
+        private const val COLLECTION_CINEMAS = "cinemas"
+        private const val COLLECTION_MOVIES = "movies"
+        private const val COLLECTION_SESSIONS = "sessions"
+    }
 
-    private val COLLECTION_CINEMAS = "cinemas"
-    private val COLLECTION_MOVIES = "movies"
-    private val COLLECTION_SESSIONS = "sessions"
+    private val FIREBASE_KEY = System.getenv("FIREBASE_KEY").byteInputStream()
+    private val FIREBASE_UID = mapOf(Pair("uid", System.getenv("FIREBASE_UID")))
+
+    private val firestoreDb: Firestore
 
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(System.getenv("FIREBASE_KEY").byteInputStream()))
-                .setDatabaseAuthVariableOverride(mapOf(Pair("uid", System.getenv("FIREBASE_UID"))))
+                .setCredentials(GoogleCredentials.fromStream(FIREBASE_KEY))
+                .setDatabaseAuthVariableOverride(FIREBASE_UID)
                 .build())
 
         firestoreDb = FirestoreClient.getFirestore()
@@ -60,5 +65,5 @@ class FirebaseManager {
     }
 
     fun getRemoteMovies(): List<Movie> =
-        firestoreDb.collection(COLLECTION_MOVIES).get().get().documents.map { it.toObject(Movie::class.java) }
+            firestoreDb.collection(COLLECTION_MOVIES).get().get().documents.map { it.toObject(Movie::class.java) }
 }

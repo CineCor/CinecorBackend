@@ -3,21 +3,23 @@ package com.cinecor.backend.model
 import com.google.cloud.firestore.annotation.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
-data class Movie(val id: String = "",
-                 var title: String = "",
-                 @get:Exclude var originalUrl: String = "",
-                 var images: HashMap<String, String> = HashMap(),
-                 var colors: HashMap<String, String> = HashMap(),
-                 var overview: String = "",
-                 var imdb: String? = null,
-                 var rating: Float? = null,
-                 var duration: Int? = null,
-                 var trailer: String? = null,
-                 var releaseDate: String? = null,
-                 var genres: List<String>? = null,
-                 var raw: String? = null,
-                 @get:Exclude var year: Int? = null,
-                 @get:Exclude var originalTitle: String? = null) {
+data class Movie(
+        val id: String = "",
+        var title: String = "",
+        @get:Exclude var originalUrl: String = "",
+        var images: HashMap<String, String> = HashMap(),
+        var colors: HashMap<String, String> = HashMap(),
+        var overview: String = "",
+        var imdbId: String? = null,
+        var rating: Float? = null,
+        var duration: Int? = null,
+        var trailer: String? = null,
+        var releaseDate: String? = null,
+        var genres: List<String>? = null,
+        var raw: String? = null,
+        @get:Exclude var year: Int? = null,
+        @get:Exclude var originalTitle: String? = null
+) {
 
     enum class Images { POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
     enum class Colors { MAIN, TITLE, BODY }
@@ -28,7 +30,7 @@ data class Movie(val id: String = "",
         movie.images.let { this.images = it }
         movie.colors.let { this.colors = it }
         movie.overview.let { this.overview = it }
-        movie.imdb?.let { this.imdb = it }
+        movie.imdbId?.let { this.imdbId = it }
         movie.rating?.let { this.rating = it }
         movie.duration?.let { this.duration = it }
         movie.trailer?.let { this.trailer = it }
@@ -40,7 +42,7 @@ data class Movie(val id: String = "",
     fun copy(movieDb: MovieDb) {
         movieDb.title?.let { this.title = it }
         movieDb.overview?.let { this.overview = it }
-        movieDb.imdbID?.let { this.imdb = "http://www.imdb.com/title/$it" }
+        movieDb.imdbID?.let { this.imdbId = it }
         movieDb.voteAverage.let { this.rating = it }
         movieDb.runtime.let { this.duration = it }
         movieDb.releaseDate?.let { this.releaseDate = it }

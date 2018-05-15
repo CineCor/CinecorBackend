@@ -94,7 +94,7 @@ object JsoupManager {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            println("\t\t ERROR Fetching from `$originalUrl`: \n$e")
         }
     }
 

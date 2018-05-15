@@ -69,13 +69,17 @@ object TmdbManager {
     }
 
     private fun Movie.fillDataWithExternalApi() {
+        println("\t\t Filling data with external API...")
+
         val movieYear = year?.let { it } ?: NOW.year
         val movieTitle = originalTitle?.let { it } ?: title
 
         try {
-            searchMovie(movieTitle, movieYear)?.let { copy(fetchMovie(it)) } // TODO Search with different combinations of title/years
-        } catch (e: IndexOutOfBoundsException) {
-            print(e)
+            // TODO Search with different combinations of title/years
+            val foundMovie = searchMovie(title, NOW.year) ?: searchMovie(movieTitle, movieYear)
+            foundMovie?.let { copy(fetchMovie(it)) }
+        } catch (e: Exception) {
+            println("\t\t ERROR Filling data from `$originalUrl`: \n$e")
         }
     }
 
