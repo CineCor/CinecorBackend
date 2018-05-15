@@ -79,7 +79,7 @@ object TmdbManager {
             val foundMovie = searchMovie(title, NOW.year) ?: searchMovie(movieTitle, movieYear)
             foundMovie?.let { copy(fetchMovie(it)) }
         } catch (e: Exception) {
-            println("\t\t ERROR Filling data from `$originalUrl`: \n$e")
+            println("\t\t ERROR Filling data from `$originalUrl`: $e")
         }
     }
 

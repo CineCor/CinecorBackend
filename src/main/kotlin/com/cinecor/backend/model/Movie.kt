@@ -11,7 +11,7 @@ data class Movie(
         var colors: HashMap<String, String> = HashMap(),
         var overview: String = "",
         var imdbId: String? = null,
-        var rating: Float? = null,
+        var rating: String? = null,
         var duration: Int? = null,
         var trailer: String? = null,
         var releaseDate: String? = null,
@@ -43,7 +43,7 @@ data class Movie(
         movieDb.title?.let { this.title = it }
         movieDb.overview?.let { this.overview = it }
         movieDb.imdbID?.let { this.imdbId = it }
-        movieDb.voteAverage.let { this.rating = it }
+        movieDb.voteAverage.let { this.rating = "%.2f".format(it) }
         movieDb.runtime.let { this.duration = it }
         movieDb.releaseDate?.let { this.releaseDate = it }
         movieDb.genres?.let { this.genres = it.map { it.name } }
