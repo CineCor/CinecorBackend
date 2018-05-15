@@ -25,8 +25,8 @@ object JsoupManager {
     }
 
     private fun parseWeb(billboard: Billboard, date: ZonedDateTime): Billboard {
-        val url = "${System.getenv("PARSE_URL")}index.php?dcar=${DateUtils.DATE_FORMAT_FULL.format(date)}"
-        val document = Jsoup.connect(url)
+        val parseUrl = "${System.getenv("PARSE_URL")}index.php?dcar=${DateUtils.DATE_FORMAT_FULL.format(date)}"
+        val document = Jsoup.connect(parseUrl)
                 .userAgent(PARSE_USER_AGENT)
                 .timeout(PARSE_TIMEOUT)
                 .get()
