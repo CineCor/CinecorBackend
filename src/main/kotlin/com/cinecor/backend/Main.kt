@@ -14,17 +14,17 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        println("Initializing Firebase...")
+        println("### Initializing Firebase")
         val firebaseManager = FirebaseManager()
 
-        println("Parsing movies...")
+        println("### Parsing movies")
         val billboardData = JsoupManager.parseBillboard()
 
         billboardData?.let {
-            println("Filling movies data...")
+            println("### Filling movies data")
             TmdbManager.fillMoviesData(billboardData, firebaseManager.getRemoteMovies())
 
-            println("Writing to Firebase...")
+            println("### Writing to Firebase")
             firebaseManager.uploadBillboard(billboardData)
         }
     }

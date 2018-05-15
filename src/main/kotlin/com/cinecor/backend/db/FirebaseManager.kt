@@ -55,7 +55,7 @@ class FirebaseManager {
 
         batch.commit().get()
 
-        println("Data saved successfully.")
+        println("### Data saved successfully.")
         System.exit(0)
     }
 

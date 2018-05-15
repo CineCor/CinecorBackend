@@ -64,7 +64,7 @@ object JsoupManager {
     }
 
     fun Movie.fillBasicDataWithOriginalSource() {
-        println("Fetching `$title` from original source...")
+        println("\t Fetching `$title` from original source...")
 
         try {
             val document = Jsoup.connect(originalUrl)
