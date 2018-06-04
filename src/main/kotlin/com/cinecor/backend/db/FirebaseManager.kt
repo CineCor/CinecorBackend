@@ -7,9 +7,14 @@ import com.cinecor.backend.utils.DateUtils
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.SetOptions
+import com.google.cloud.storage.Bucket
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
+import com.google.firebase.cloud.StorageClient
+import java.io.ByteArrayOutputStream
+import java.net.URL
+import javax.imageio.ImageIO
 
 
 class FirebaseManager {
@@ -24,14 +29,17 @@ class FirebaseManager {
     private val FIREBASE_UID = mapOf(Pair("uid", System.getenv("FIREBASE_UID")))
 
     private val firestoreDb: Firestore
+    private var bucket: Bucket
 
     init {
         FirebaseApp.initializeApp(FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(FIREBASE_KEY))
                 .setDatabaseAuthVariableOverride(FIREBASE_UID)
+                .setStorageBucket("project-8715522583919149180.appspot.com")
                 .build())
 
         firestoreDb = FirestoreClient.getFirestore()
+        bucket = StorageClient.getInstance().bucket()
     }
 
     fun uploadBillboard(billboardData: Billboard) {
@@ -45,8 +53,12 @@ class FirebaseManager {
             batch.set(cinemas.document(it.id), it, SetOptions.mergeFields("id", "name"))
         }
 
-        billboardData.movies.forEach {
-            batch.set(movies.document(it.id), it)
+        billboardData.movies.forEach { movie ->
+            movie.imagePoster = uploadImage("${movie.id}/poster", movie.imagePoster)
+            if (!movie.imageBackdrop.isNullOrBlank())
+                movie.imageBackdrop = uploadImage("${movie.id}/backdrop", movie.imageBackdrop!!)
+
+            batch.set(movies.document(movie.id), movie)
         }
 
         val earlierSessionId = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(NOW).plus("00000")
@@ -62,6 +74,13 @@ class FirebaseManager {
 
         println("### Data saved successfully.")
         System.exit(0)
+    }
+
+    private fun uploadImage(imageId: String, imageUrl: String): String {
+        val outputStream = ByteArrayOutputStream()
+        val bufferedImage = ImageIO.read(URL(imageUrl))
+        ImageIO.write(bufferedImage, "jpg", outputStream)
+        return bucket.create("movies/$imageId.jpg", outputStream.toByteArray(), "image/jpg").mediaLink
     }
 
     fun getRemoteMovies(): List<Movie> =

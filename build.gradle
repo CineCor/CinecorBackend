@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "com.google.firebase:firebase-admin:6.1.0"
+    compile "com.google.firebase:firebase-admin:6.2.0"
     compile "org.jsoup:jsoup:1.11.3"
     compile "info.movito:themoviedbapi:1.7"
     compile "com.loyalsound:iris:1.1"

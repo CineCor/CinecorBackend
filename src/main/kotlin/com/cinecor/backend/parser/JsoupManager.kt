@@ -74,22 +74,21 @@ object JsoupManager {
 
             val movieDetails = document.select("div#sobrepelicula")
 
-            val movieImage = movieDetails.select("img")
-            if (movieImage.isNotEmpty()) {
-                images[Movie.Images.POSTER.name] = movieImage.first().absUrl("src")
+            movieDetails.select("img")?.first()?.absUrl("src")?.let { image ->
+                if (image.isNotBlank()) {
+                    imagePoster = image
+                }
             }
 
-            val movieDescription = movieDetails.select("h5")
-            if (movieDescription.isNotEmpty()) {
-                movieDescription.indices.forEach { i ->
-                    val movieRaw = movieDescription[i]
-                    if (i == 0) {
-                        raw = movieRaw.text()
-                        getFieldFromRawHtml(movieRaw.html(), "Año")?.let { year = it.toInt() }
-                        getFieldFromRawHtml(movieRaw.html(), "Título original")?.let { originalTitle = it }
-                    } else if (i == 1) {
-                        overview = movieRaw.text()
-                        return
+            movieDetails.select("h5")?.let { descriptions ->
+                for ((index, description) in descriptions.withIndex()) {
+                    if (index == 0) {
+                        raw = description.text()
+                        getFieldFromRawHtml(description.html(), "Año")?.let { year = it.toInt() }
+                        getFieldFromRawHtml(description.html(), "Título original")?.let { originalTitle = it }
+                    } else if (index == 1) {
+                        overview = description.text()
+                        break
                     }
                 }
             }

@@ -31,7 +31,7 @@ object TmdbManager {
         billboardData.sessions.forEach { session ->
             billboardData.movies.find { it.id == session.movieId }?.let {
                 session.movieTitle = it.title
-                session.movieImages = it.images
+                session.movieImage = it.imageBackdrop ?: it.imagePoster
             }
         }
     }
@@ -47,11 +47,10 @@ object TmdbManager {
     }
 
     private fun Movie.fillColors() {
-        if (images.isEmpty()) return
-        val url = images.getOrDefault(Movie.Images.BACKDROP_THUMBNAIL.name, images[Movie.Images.POSTER.name])
+        if (imagePoster.isEmpty()) return
 
         try {
-            val palette = Palette.Builder(Bitmap(ImageIO.read(URL(url)))).generate()
+            val palette = Palette.Builder(Bitmap(ImageIO.read(URL(imagePoster)))).generate()
             palette?.let {
                 var swatch = palette.vibrantSwatch
                 if (swatch == null) swatch = palette.mutedSwatch

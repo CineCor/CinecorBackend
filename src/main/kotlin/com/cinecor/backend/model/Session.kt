@@ -7,7 +7,7 @@ data class Session(
         val date: String = "",
         var hours: HashMap<String, List<String>> = HashMap(),
         var movieTitle: String = "",
-        var movieImages: HashMap<String, String> = HashMap()
+        var movieImage: String = ""
 ) {
 
     enum class HoursType { NORMAL, VOSE, THREEDIM }

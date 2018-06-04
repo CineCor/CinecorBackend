@@ -7,7 +7,8 @@ data class Movie(
         val id: String = "",
         var title: String = "",
         @get:Exclude var originalUrl: String = "",
-        var images: HashMap<String, String> = HashMap(),
+        var imagePoster: String = "",
+        var imageBackdrop: String? = null,
         var colors: HashMap<String, String> = HashMap(),
         var overview: String = "",
         var imdbId: String? = null,
@@ -21,13 +22,13 @@ data class Movie(
         @get:Exclude var originalTitle: String? = null
 ) {
 
-    enum class Images { POSTER, POSTER_THUMBNAIL, BACKDROP, BACKDROP_THUMBNAIL }
     enum class Colors { MAIN, TITLE, BODY }
 
     fun copy(movie: Movie) {
         movie.title.let { this.title = it }
         movie.originalUrl.let { this.originalUrl = it }
-        movie.images.let { this.images = it }
+        movie.imagePoster.let { this.imagePoster = it }
+        movie.imageBackdrop.let { this.imageBackdrop = it }
         movie.colors.let { this.colors = it }
         movie.overview.let { this.overview = it }
         movie.imdbId?.let { this.imdbId = it }
@@ -47,25 +48,21 @@ data class Movie(
         movieDb.runtime.let { this.duration = it }
         movieDb.releaseDate?.let { this.releaseDate = it }
         movieDb.genres?.let { this.genres = it.map { it.name } }
+        movieDb.posterPath?.let { path ->
+            if (path.isNotBlank()) {
+                this.imagePoster = "http://image.tmdb.org/t/p/original$path"
+            }
+        }
+        movieDb.backdropPath?.let { path ->
+            if (path.isNotBlank()) {
+                this.imageBackdrop = "http://image.tmdb.org/t/p/original$path"
+            }
+        }
         movieDb.videos?.let { videos ->
             if (videos.isNotEmpty()) {
                 videos.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let {
                     this.trailer = "https://www.youtube.com/watch?v=$it"
                 }
-            }
-        }
-
-        movieDb.posterPath?.let { path ->
-            if (path.isNotBlank()) {
-                this.images[Movie.Images.POSTER.name] = "http://image.tmdb.org/t/p/w780$path"
-                this.images[Movie.Images.POSTER_THUMBNAIL.name] = "http://image.tmdb.org/t/p/w92$path"
-            }
-        }
-
-        movieDb.backdropPath?.let { path ->
-            if (path.isNotBlank()) {
-                this.images[Movie.Images.BACKDROP.name] = "http://image.tmdb.org/t/p/w780$path"
-                this.images[Movie.Images.BACKDROP_THUMBNAIL.name] = "http://image.tmdb.org/t/p/w300$path"
             }
         }
     }
