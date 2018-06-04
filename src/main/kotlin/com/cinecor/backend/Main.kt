@@ -1,8 +1,8 @@
 package com.cinecor.backend
 
+import com.cinecor.backend.api.TmdbManager
 import com.cinecor.backend.db.FirebaseManager
 import com.cinecor.backend.parser.JsoupManager
-import com.cinecor.backend.api.TmdbManager
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -15,17 +15,17 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>) {
         println("### Initializing Firebase")
-        val firebaseManager = FirebaseManager()
+        FirebaseManager.init()
 
         println("### Parsing movies")
         val billboardData = JsoupManager.parseBillboard()
 
         billboardData?.let {
             println("### Filling movies data")
-            TmdbManager.fillMoviesData(billboardData, firebaseManager.getRemoteMovies())
+            TmdbManager.fillMoviesData(billboardData, FirebaseManager.getRemoteMovies())
 
             println("### Writing to Firebase")
-            firebaseManager.uploadBillboard(billboardData)
+            FirebaseManager.uploadBillboard(billboardData)
         }
     }
 }

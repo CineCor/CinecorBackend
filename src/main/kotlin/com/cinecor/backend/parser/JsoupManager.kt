@@ -74,11 +74,7 @@ object JsoupManager {
 
             val movieDetails = document.select("div#sobrepelicula")
 
-            movieDetails.select("img")?.first()?.absUrl("src")?.let { image ->
-                if (image.isNotBlank()) {
-                    imagePoster = image
-                }
-            }
+            movieDetails.select("img")?.first()?.absUrl("src")?.let { imagePoster = it }
 
             movieDetails.select("h5")?.let { descriptions ->
                 for ((index, description) in descriptions.withIndex()) {

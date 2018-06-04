@@ -23,8 +23,8 @@ object TmdbManager {
         billboardData.movies.forEach { movie ->
             if (!movie.fillDataWithExistingMovies(billboardData.movies, remoteMovies)) {
                 movie.fillBasicDataWithOriginalSource()
-                movie.fillDataWithExternalApi()
                 movie.fillColors()
+                movie.fillDataWithExternalApi() // TODO Fill colors should be done at the end, make GCS url public to download
             }
         }
 
