@@ -38,23 +38,27 @@ object JsoupManager {
                 val cinemaName = cinemaElement.select("h1 a").text()
 
                 val moviesElements = cinemaElement.select("div.pildora")
-                moviesElements.forEach { movieElement ->
-                    val movieLink = movieElement.select("a")
-                    if (movieLink.isNotEmpty()) {
-                        val movieId = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                        val title = movieLink.first().text()
-                        val hours = DateUtils.getFormattedDatesFromHoursText(movieElement.select("h5").text())
-                        val is3d = movieElement.select("h5").text().contains("3D")
-                        val isVose = movieElement.select("h5").text().contains("V.O.S.E")
-                        val url = movieLink.first().attr("abs:href")
+                if (moviesElements.isNotEmpty()) {
+                    moviesElements.forEach { movieElement ->
+                        val movieLink = movieElement.select("a")
+                        if (movieLink.isNotEmpty()) {
+                            val movieId = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+                            val title = movieLink.first().text()
+                            val hours = DateUtils.getFormattedDatesFromHoursText(movieElement.select("h5").text())
+                            val is3d = movieElement.select("h5").text().contains("3D")
+                            val isVose = movieElement.select("h5").text().contains("V.O.S.E")
+                            val url = movieLink.first().attr("abs:href")
 
-                        billboard.sessions.add(date, cinemaId, movieId, is3d, isVose, hours)
-                        billboard.movies.add(movieId, title, url)
+                            billboard.sessions.add(date, cinemaId, movieId, is3d, isVose, hours)
+                            billboard.movies.add(movieId, title, url)
+                        }
                     }
-                }
 
-                if (moviesElements.select("a").isNotEmpty()) {
-                    billboard.cinemas.add(cinemaId, cinemaName)
+                    if (moviesElements.select("a").isNotEmpty()) {
+                        billboard.cinemas.add(cinemaId, cinemaName)
+                    }
+                } else {
+                    System.err.println("Empty movies")
                 }
             }
         } else {

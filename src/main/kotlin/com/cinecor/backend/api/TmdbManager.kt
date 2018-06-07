@@ -53,7 +53,6 @@ object TmdbManager {
         val movieYear = year?.let { it } ?: NOW.year
         val movieTitle = originalTitle?.let { it } ?: title
 
-        // TODO Search with different combinations of title/years
         val foundMovie = searchMovie(title, NOW.year) ?: searchMovie(movieTitle, movieYear) ?: searchMovie(title, 0)
         foundMovie
                 ?.let { copy(fetchMovie(it)) }
