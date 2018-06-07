@@ -53,7 +53,8 @@ object FirebaseManager {
         val earlierSessionId = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(NOW).plus("00000")
         sessions.whereLessThan("id", earlierSessionId).get().get().documents.forEach {
             batch.delete(sessions.document(it.id))
-            firebaseBucket.get("movies/${it.id}")?.delete()
+            firebaseBucket.get("movies/${it.id}/poster.jpg")?.delete()
+            firebaseBucket.get("movies/${it.id}/backdrop.jpg")?.delete()
         }
 
         billboardData.sessions.forEach {
@@ -67,14 +68,14 @@ object FirebaseManager {
     }
 
     fun uploadImage(bufferedImage: BufferedImage? = null, imageUrl: String, imagePath: String): String {
-        val bucket = StorageClient.getInstance().bucket()
-        bucket.get(imagePath)?.run { return mediaLink }
+        val firebaseBucket = StorageClient.getInstance().bucket()
+        firebaseBucket.get(imagePath)?.run { return mediaLink }
 
         val bucketBufferedImage = bufferedImage ?: ImageIO.read(URL(imageUrl))
 
         val imageOutputStream = ByteArrayOutputStream()
         ImageIO.write(bucketBufferedImage, "jpg", imageOutputStream)
-        val blob = bucket.create(imagePath, imageOutputStream.toByteArray(), "image/jpg")
+        val blob = firebaseBucket.create(imagePath, imageOutputStream.toByteArray(), "image/jpg")
         imageOutputStream.close()
 
         return blob.mediaLink

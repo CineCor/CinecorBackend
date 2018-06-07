@@ -44,8 +44,8 @@ data class Movie(
         movieDb.title?.let { this.title = it }
         movieDb.overview?.let { this.overview = it }
         movieDb.imdbID?.let { this.imdbId = it }
-        movieDb.voteAverage?.let { this.rating = "%.2f".format(it) }
-        movieDb.runtime?.let { this.duration = it }
+        movieDb.voteAverage.let { this.rating = "%.2f".format(it) }
+        movieDb.runtime.let { this.duration = it }
         movieDb.releaseDate?.let { this.releaseDate = it }
         movieDb.genres?.take(4)?.map { it.name }?.let { this.genres = it }
         movieDb.videos?.find { it.type == "Trailer" && it.site == "YouTube" }?.key?.let {
