@@ -58,7 +58,7 @@ object JsoupManager {
                 }
             }
         } else {
-            println("Empty cinemas")
+            System.err.println("Empty cinemas")
         }
         return billboard
     }
@@ -89,7 +89,7 @@ object JsoupManager {
                 }
             }
         } catch (e: Exception) {
-            println("\t\t ERROR Fetching from `$originalUrl`: $e")
+            System.err.println("\t\t ERROR Fetching from `$originalUrl`: $e")
         }
     }
 

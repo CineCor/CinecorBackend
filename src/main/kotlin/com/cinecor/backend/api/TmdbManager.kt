@@ -53,13 +53,11 @@ object TmdbManager {
         val movieYear = year?.let { it } ?: NOW.year
         val movieTitle = originalTitle?.let { it } ?: title
 
-        try {
-            // TODO Search with different combinations of title/years
-            val foundMovie = searchMovie(title, NOW.year) ?: searchMovie(movieTitle, movieYear)
-            foundMovie?.let { copy(fetchMovie(it)) }
-        } catch (e: Exception) {
-            println("\t\t ERROR Filling data from `$originalUrl`: $e")
-        }
+        // TODO Search with different combinations of title/years
+        val foundMovie = searchMovie(title, NOW.year) ?: searchMovie(movieTitle, movieYear) ?: searchMovie(title, 0)
+        foundMovie
+                ?.let { copy(fetchMovie(it)) }
+                ?: run { System.err.println("\t\t ERROR Filling data from `$originalUrl`") }
     }
 
     private fun Movie.fillColorsAndUploadImage() {
@@ -77,17 +75,17 @@ object TmdbManager {
                 )
             }
         } catch (e: Exception) {
+            System.err.println("\t\t ERROR Uploading: ${this}")
             e.printStackTrace()
-            System.out.println("Movie: ${this}")
         } finally {
-            FirebaseManager.uploadImage(bufferedImage, imagePoster, "movies/$id/poster")
-            imageBackdrop?.let { FirebaseManager.uploadImage(imageUrl = it, imagePath = "movies/$id/backdrop") }
+            imagePoster = FirebaseManager.uploadImage(bufferedImage, imagePoster, "movies/$id/poster.jpg")
+            imageBackdrop = imageBackdrop?.let { FirebaseManager.uploadImage(imageUrl = it, imagePath = "movies/$id/backdrop.jpg") }
         }
     }
 
     @Throws(IndexOutOfBoundsException::class)
     private fun searchMovie(title: String, year: Int?): Int? =
-            tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)?.results?.get(0)?.id
+            tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)?.results?.firstOrNull()?.id
 
     private fun fetchMovie(movieId: Int): MovieDb =
             tmdbApi.movies.getMovie(movieId, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)

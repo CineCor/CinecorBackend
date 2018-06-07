@@ -68,11 +68,15 @@ object FirebaseManager {
 
     fun uploadImage(bufferedImage: BufferedImage? = null, imageUrl: String, imagePath: String): String {
         val bucket = StorageClient.getInstance().bucket()
+        bucket.get(imagePath)?.run { return mediaLink }
+
         val bucketBufferedImage = bufferedImage ?: ImageIO.read(URL(imageUrl))
+
         val imageOutputStream = ByteArrayOutputStream()
         ImageIO.write(bucketBufferedImage, "jpg", imageOutputStream)
-        val blob = bucket.create("$imagePath.jpg", imageOutputStream.toByteArray(), "image/jpg")
+        val blob = bucket.create(imagePath, imageOutputStream.toByteArray(), "image/jpg")
         imageOutputStream.close()
+
         return blob.mediaLink
     }
 
