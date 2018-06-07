@@ -1,6 +1,7 @@
 package com.cinecor.backend.api
 
 import com.cinecor.backend.Main.NOW
+import com.cinecor.backend.db.FirebaseManager
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
 import com.cinecor.backend.parser.JsoupManager.fillBasicDataWithOriginalSource
@@ -10,7 +11,7 @@ import com.vivekpanyam.iris.Palette
 import info.movito.themoviedbapi.TmdbApi
 import info.movito.themoviedbapi.TmdbMovies
 import info.movito.themoviedbapi.model.MovieDb
-import java.io.IOException
+import java.awt.image.BufferedImage
 import java.net.URL
 import javax.imageio.ImageIO
 
@@ -23,8 +24,8 @@ object TmdbManager {
         billboardData.movies.forEach { movie ->
             if (!movie.fillDataWithExistingMovies(billboardData.movies, remoteMovies)) {
                 movie.fillBasicDataWithOriginalSource()
-                movie.fillColors()
-                movie.fillDataWithExternalApi() // TODO Fill colors should be done at the end, make GCS url public to download
+                movie.fillDataWithExternalApi()
+                movie.fillColorsAndUploadImage()
             }
         }
 
@@ -46,27 +47,6 @@ object TmdbManager {
         return false
     }
 
-    private fun Movie.fillColors() {
-        if (imagePoster.isEmpty()) return
-
-        try {
-            val palette = Palette.Builder(Bitmap(ImageIO.read(URL(imagePoster)))).generate()
-            palette?.let {
-                var swatch = palette.vibrantSwatch
-                if (swatch == null) swatch = palette.mutedSwatch
-                if (swatch == null) swatch = palette.dominantSwatch
-
-                colors = hashMapOf(
-                        Pair(Movie.Colors.MAIN.name, swatch.rgb.formattedColor()),
-                        Pair(Movie.Colors.TITLE.name, swatch.titleTextColor.formattedColor()),
-                        Pair(Movie.Colors.BODY.name, swatch.bodyTextColor.formattedColor())
-                )
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
     private fun Movie.fillDataWithExternalApi() {
         println("\t\t Filling data with external API...")
 
@@ -79,6 +59,29 @@ object TmdbManager {
             foundMovie?.let { copy(fetchMovie(it)) }
         } catch (e: Exception) {
             println("\t\t ERROR Filling data from `$originalUrl`: $e")
+        }
+    }
+
+    private fun Movie.fillColorsAndUploadImage() {
+        if (imagePoster.isEmpty()) return
+
+        var bufferedImage: BufferedImage? = null
+        try {
+            bufferedImage = ImageIO.read(URL(imagePoster))
+            Palette.Builder(Bitmap(bufferedImage)).generate()?.let { palette ->
+                val swatch = palette.vibrantSwatch ?: palette.mutedSwatch ?: palette.dominantSwatch
+                colors = hashMapOf(
+                        Pair(Movie.Colors.MAIN.name, swatch.rgb.formattedColor()),
+                        Pair(Movie.Colors.TITLE.name, swatch.titleTextColor.formattedColor()),
+                        Pair(Movie.Colors.BODY.name, swatch.bodyTextColor.formattedColor())
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            System.out.println("Movie: ${this}")
+        } finally {
+            FirebaseManager.uploadImage(bufferedImage, imagePoster, "movies/$id/poster")
+            imageBackdrop?.let { FirebaseManager.uploadImage(imageUrl = it, imagePath = "movies/$id/backdrop") }
         }
     }
 

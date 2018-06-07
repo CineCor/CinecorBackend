@@ -10,6 +10,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
 import com.google.firebase.cloud.StorageClient
+import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.net.URL
 import javax.imageio.ImageIO
@@ -65,12 +66,14 @@ object FirebaseManager {
         System.exit(0)
     }
 
-    fun uploadImage(imageUrl: String, imagePath: String): String {
+    fun uploadImage(bufferedImage: BufferedImage? = null, imageUrl: String, imagePath: String): String {
         val bucket = StorageClient.getInstance().bucket()
-        val outputStream = ByteArrayOutputStream()
-        val bufferedImage = ImageIO.read(URL(imageUrl))
-        ImageIO.write(bufferedImage, "jpg", outputStream)
-        return bucket.create("$imagePath.jpg", outputStream.toByteArray(), "image/jpg").mediaLink
+        val bucketBufferedImage = bufferedImage ?: ImageIO.read(URL(imageUrl))
+        val imageOutputStream = ByteArrayOutputStream()
+        ImageIO.write(bucketBufferedImage, "jpg", imageOutputStream)
+        val blob = bucket.create("$imagePath.jpg", imageOutputStream.toByteArray(), "image/jpg")
+        imageOutputStream.close()
+        return blob.mediaLink
     }
 
     fun getRemoteMovies() =

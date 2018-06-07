@@ -1,6 +1,5 @@
 package com.cinecor.backend.model
 
-import com.cinecor.backend.db.FirebaseManager
 import com.google.cloud.firestore.annotation.Exclude
 import info.movito.themoviedbapi.model.MovieDb
 
@@ -25,14 +24,6 @@ data class Movie(
 
     enum class Colors { MAIN, TITLE, BODY }
 
-    fun uploadPosterImageUrl(imageUrl: String) {
-        imagePoster = FirebaseManager.uploadImage(imageUrl, "movies/$id/poster")
-    }
-
-    fun uploadBackdropImageUrl(imageUrl: String) {
-        imageBackdrop = FirebaseManager.uploadImage(imageUrl, "movies/$id/backdrop")
-    }
-
     fun copy(movie: Movie) {
         movie.title.let { this.title = it }
         movie.originalUrl.let { this.originalUrl = it }
@@ -53,20 +44,18 @@ data class Movie(
         movieDb.title?.let { this.title = it }
         movieDb.overview?.let { this.overview = it }
         movieDb.imdbID?.let { this.imdbId = it }
-        movieDb.voteAverage.let { this.rating = "%.2f".format(it) }
-        movieDb.runtime.let { this.duration = it }
+        movieDb.voteAverage?.let { this.rating = "%.2f".format(it) }
+        movieDb.runtime?.let { this.duration = it }
         movieDb.releaseDate?.let { this.releaseDate = it }
-        movieDb.genres?.let { this.genres = it.map { it.name } }
-        movieDb.videos?.find { it.type == "Trailer" && it.site == "YouTube" }?.key.let {
+        movieDb.genres?.map { it.name }?.let { this.genres = it }
+        movieDb.videos?.find { it.type == "Trailer" && it.site == "YouTube" }?.key?.let {
             this.trailer = "https://www.youtube.com/watch?v=$it"
         }
-        if (movieDb.posterPath.isNullOrBlank()) {
-            uploadPosterImageUrl(imagePoster)
-        } else {
-            uploadPosterImageUrl("http://image.tmdb.org/t/p/original${movieDb.posterPath}")
+        if (!movieDb.posterPath.isNullOrBlank()) {
+            this.imagePoster = "https://image.tmdb.org/t/p/original${movieDb.posterPath}"
         }
         if (!movieDb.backdropPath.isNullOrBlank()) {
-            uploadBackdropImageUrl("http://image.tmdb.org/t/p/original${movieDb.backdropPath}")
+            this.imageBackdrop = "https://image.tmdb.org/t/p/original${movieDb.backdropPath}"
         }
     }
 }
