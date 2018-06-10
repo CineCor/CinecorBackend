@@ -58,7 +58,7 @@ object JsoupManager {
                         billboard.cinemas.add(cinemaId, cinemaName)
                     }
                 } else {
-                    System.err.println("Empty movies")
+                    System.err.println("Empty movies for $cinemaName on ${DateUtils.DATE_FORMAT_FULL.format(date)}")
                 }
             }
         } else {
