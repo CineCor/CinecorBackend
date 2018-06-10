@@ -53,9 +53,11 @@ object TmdbManager {
         val movieYear = year?.let { it } ?: NOW.year
         val movieTitle = originalTitle?.let { it } ?: title
 
-        val foundMovie = searchMovie(title, NOW.year) ?: searchMovie(movieTitle, movieYear) ?: searchMovie(title, 0)
-        foundMovie
-                ?.let { copy(fetchMovie(it)) }
+        val foundMovie = searchMovie(title, NOW.year)
+                ?: searchMovie(movieTitle, movieYear)
+                ?: searchMovie(title, 0)
+
+        foundMovie?.let { copy(fetchMovie(it)) }
                 ?: run { System.err.println("\t\t ERROR Filling data from `$originalUrl`") }
     }
 
@@ -87,7 +89,23 @@ object TmdbManager {
             tmdbApi.search.searchMovie(title, year, TMDB_LANGUAGE, true, 0)?.results?.firstOrNull()?.id
 
     private fun fetchMovie(movieId: Int): MovieDb =
-            tmdbApi.movies.getMovie(movieId, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos)
+            tmdbApi.movies.getMovie(movieId, TMDB_LANGUAGE, TmdbMovies.MovieMethod.videos, TmdbMovies.MovieMethod.credits)
 
     private fun Int.formattedColor() = String.format("#%02x%02x%02x%02x", Color.red(this), Color.green(this), Color.blue(this), Color.alpha(this))
+
+    private fun Movie.copy(movieDb: MovieDb?) {
+        movieDb?.let { movie ->
+            if (!movie.title.isNullOrBlank()) this.title = movie.title
+            if (!movie.imdbID.isNullOrBlank()) this.imdbId = movie.imdbID
+            if (!movie.overview.isNullOrBlank()) this.overview = movie.overview
+            if (!movie.releaseDate.isNullOrBlank()) this.releaseDate = movie.releaseDate
+            if (!movie.posterPath.isNullOrBlank()) this.imagePoster = "https://image.tmdb.org/t/p/original${movieDb.posterPath}"
+            if (!movie.backdropPath.isNullOrBlank()) this.imageBackdrop = "https://image.tmdb.org/t/p/original${movieDb.backdropPath}"
+            if (movie.runtime != 0) this.duration = movie.runtime
+            if (movie.voteAverage != 0.0f) this.rating = "%.2f".format(movie.voteAverage)
+            movie.genres?.take(4)?.map { it.name }?.let { this.genres = it }
+            movie.credits?.crew?.firstOrNull { it.job == "Director" }?.name?.let { this.director = it }
+            movie.videos?.find { it.type == "Trailer" && it.site == "YouTube" }?.key?.let { this.trailer = "https://www.youtube.com/watch?v=$it" }
+        }
+    }
 }

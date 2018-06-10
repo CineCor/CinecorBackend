@@ -98,12 +98,10 @@ object JsoupManager {
     }
 
     private fun getFieldFromRawHtml(html: String, field: String): String? =
-            if (html.contains(field))
-                html.split("<br>")
-                        .find { it.contains(field) }!!
-                        .split("</b>")[1]
-                        .trim()
-            else null
+            html.split("<br>")
+                    .find { it.contains(field) }
+                    ?.split("</b>")?.get(1)
+                    ?.clean()
 
     private fun MutableSet<Cinema>.add(cinemaId: String, cinemaName: String) =
             add(Cinema(cinemaId, cinemaName))
@@ -129,4 +127,6 @@ object JsoupManager {
             }
         }
     }
+
+    private fun String.clean() = Regex("[^A-Za-z0-9 ]").replace(this.trim(), "")
 }

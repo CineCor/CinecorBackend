@@ -1,7 +1,6 @@
 package com.cinecor.backend.model
 
 import com.google.cloud.firestore.annotation.Exclude
-import info.movito.themoviedbapi.model.MovieDb
 
 data class Movie(
         val id: String = "",
@@ -12,6 +11,7 @@ data class Movie(
         var colors: HashMap<String, String> = HashMap(),
         var overview: String = "",
         var imdbId: String? = null,
+        var director: String? = null,
         var rating: String? = null,
         var duration: Int? = null,
         var trailer: String? = null,
@@ -32,30 +32,12 @@ data class Movie(
         movie.colors.let { this.colors = it }
         movie.overview.let { this.overview = it }
         movie.imdbId?.let { this.imdbId = it }
+        movie.director?.let { this.director = it }
         movie.rating?.let { this.rating = it }
         movie.duration?.let { this.duration = it }
         movie.trailer?.let { this.trailer = it }
         movie.releaseDate?.let { this.releaseDate = it }
         movie.genres?.let { this.genres = it }
         movie.raw?.let { this.raw = it }
-    }
-
-    fun copy(movieDb: MovieDb) {
-        movieDb.title?.let { this.title = it }
-        movieDb.overview?.let { this.overview = it }
-        movieDb.imdbID?.let { this.imdbId = it }
-        movieDb.voteAverage.let { this.rating = "%.2f".format(it) }
-        movieDb.runtime.let { this.duration = it }
-        movieDb.releaseDate?.let { this.releaseDate = it }
-        movieDb.genres?.take(4)?.map { it.name }?.let { this.genres = it }
-        movieDb.videos?.find { it.type == "Trailer" && it.site == "YouTube" }?.key?.let {
-            this.trailer = "https://www.youtube.com/watch?v=$it"
-        }
-        if (!movieDb.posterPath.isNullOrBlank()) {
-            this.imagePoster = "https://image.tmdb.org/t/p/original${movieDb.posterPath}"
-        }
-        if (!movieDb.backdropPath.isNullOrBlank()) {
-            this.imageBackdrop = "https://image.tmdb.org/t/p/original${movieDb.backdropPath}"
-        }
     }
 }
