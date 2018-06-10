@@ -3,8 +3,10 @@ package com.cinecor.backend.db
 import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
+import com.cinecor.backend.model.Session
 import com.cinecor.backend.utils.DateUtils
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.SetOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -51,11 +53,15 @@ object FirebaseManager {
         }
 
         val earlierSessionId = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(NOW).plus("00000")
-        sessions.whereLessThan("id", earlierSessionId).get().get().documents.forEach {
-            batch.delete(sessions.document(it.id))
-            firebaseBucket.get("movies/${it.id}/poster.jpg")?.delete()
-            firebaseBucket.get("movies/${it.id}/backdrop.jpg")?.delete()
-        }
+        sessions.whereLessThan("id", earlierSessionId).get().get().documents
+                .map { it as DocumentSnapshot }
+                .forEach { document ->
+                    batch.delete(document.reference)
+                    document.toObject(Session::class.java)?.movieId?.let { movieId ->
+                        firebaseBucket.get("movies/$movieId/poster.jpg")?.delete()
+                        firebaseBucket.get("movies/$movieId/backdrop.jpg")?.delete()
+                    }
+                }
 
         billboardData.sessions.forEach {
             batch.set(sessions.document(it.id), it)
