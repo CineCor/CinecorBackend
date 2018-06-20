@@ -15,7 +15,7 @@ object JsoupManager {
     private const val PARSE_USER_AGENT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
     fun parseBillboard(): Billboard? = try {
-        val billboard = Billboard(mutableSetOf(), mutableSetOf(), mutableSetOf())
+        val billboard = Billboard()
         for (i in 0..6) parseWeb(billboard, NOW.plusDays(i.toLong()))
         billboard
     } catch (e: Exception) {
@@ -25,7 +25,8 @@ object JsoupManager {
     }
 
     private fun parseWeb(billboard: Billboard, date: ZonedDateTime): Billboard {
-        val parseUrl = "${System.getenv("PARSE_URL")}index.php?dcar=${DateUtils.DATE_FORMAT_FULL.format(date)}"
+        val formattedDate = DateUtils.DATE_FORMAT_FULL.format(date)
+        val parseUrl = "${System.getenv("PARSE_URL")}index.php?dcar=$formattedDate"
         val document = Jsoup.connect(parseUrl)
                 .userAgent(PARSE_USER_AGENT)
                 .timeout(PARSE_TIMEOUT)
@@ -58,11 +59,11 @@ object JsoupManager {
                         billboard.cinemas.add(cinemaId, cinemaName)
                     }
                 } else {
-                    System.err.println("Empty movies for $cinemaName on ${DateUtils.DATE_FORMAT_FULL.format(date)}")
+                    System.err.println("Empty movies for $cinemaName on $formattedDate")
                 }
             }
         } else {
-            System.err.println("Empty cinemas")
+            System.err.println("Empty cinemas on $formattedDate")
         }
         return billboard
     }
