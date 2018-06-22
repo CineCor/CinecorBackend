@@ -1,13 +1,17 @@
 package com.cinecor.backend.parser
 
+import com.cinecor.backend.Main
 import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Cinema
 import com.cinecor.backend.model.Movie
 import com.cinecor.backend.model.Session
 import com.cinecor.backend.utils.DateUtils
+import com.google.common.base.CharMatcher
 import org.jsoup.Jsoup
+import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 object JsoupManager {
 
@@ -46,7 +50,7 @@ object JsoupManager {
                             val movieId = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                             val title = movieLink.first().text()
                             val rawHours = movieElement.select("h5").text()
-                            val hours = DateUtils.getFormattedDatesFromHoursText(rawHours)
+                            val hours = getFormattedDatesFromHoursText(date, rawHours)
                             val is3d = rawHours.contains("3D")
                             val isVose = rawHours.contains("V.O.S.E")
                             val isJunior = rawHours.contains("Junior")
@@ -106,6 +110,17 @@ object JsoupManager {
                     ?.split("</b>")?.get(1)
                     ?.clean()
 
+    private fun getFormattedDatesFromHoursText(date: ZonedDateTime, hours: String) =
+            hours.split("-".toRegex())
+                    .dropLastWhile { it.isEmpty() }.toTypedArray()
+                    .map { CharMatcher.digit().retainFrom(it) }
+                    .filter { it.length >= 4 }
+                    .map { it.substring(0, 4) }
+                    .map { LocalTime.parse(it, DateUtils.DATE_FORMAT_HOUR) }
+                    .map { date.plusDays(if (it.hour < 5) 1 else 0).withHour(it.hour).withMinute(it.minute) }
+                    .filter { it.isAfter(Main.NOW) }
+                    .map { DateTimeFormatter.ISO_INSTANT.format(it) }
+
     private fun MutableSet<Cinema>.add(cinemaId: String, cinemaName: String) =
             add(Cinema(cinemaId, cinemaName))
 
@@ -124,8 +139,12 @@ object JsoupManager {
             else -> Session.Type.NORMAL
         }
 
-        find { it.id == sessionId }?.hours?.put(sessionType.name, hours)
-                ?: add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(sessionType.name, hours))))
+        val foundSession = find { it.id == sessionId }
+        if (foundSession != null) {
+            foundSession.hours.put(sessionType.name, hours)
+        } else {
+            add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(sessionType.name, hours))))
+        }
     }
 
     private fun String.clean() = Regex("[^A-Za-z0-9 ]").replace(this.trim(), "")
