@@ -72,10 +72,10 @@ object TmdbManager {
             bufferedImage = ImageIO.read(URL(imagePoster))
             Palette.Builder(Bitmap(bufferedImage)).generate()?.let { palette ->
                 val swatch = palette.vibrantSwatch ?: palette.mutedSwatch ?: palette.dominantSwatch
-                colors = hashMapOf(
-                        Pair(Movie.Colors.MAIN.name, swatch.rgb.formattedColor()),
-                        Pair(Movie.Colors.TITLE.name, swatch.titleTextColor.formattedColor()),
-                        Pair(Movie.Colors.BODY.name, swatch.bodyTextColor.formattedColor())
+                colors = Movie.Colors(
+                        swatch.rgb.formattedColor(),
+                        swatch.titleTextColor.formattedColor(),
+                        swatch.bodyTextColor.formattedColor()
                 )
             }
         } catch (e: Exception) {

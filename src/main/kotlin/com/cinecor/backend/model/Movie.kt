@@ -8,7 +8,7 @@ data class Movie(
         @get:Exclude var originalUrl: String = "",
         var imagePoster: String = "",
         var imageBackdrop: String? = null,
-        var colors: HashMap<String, String> = HashMap(),
+        var colors: Colors = Colors(),
         var overview: String = "",
         var imdbId: String? = null,
         var director: String? = null,
@@ -21,8 +21,6 @@ data class Movie(
         @get:Exclude var year: Int? = null,
         @get:Exclude var originalTitle: String? = null
 ) {
-
-    enum class Colors { MAIN, TITLE, BODY }
 
     fun copy(movie: Movie) {
         movie.title.let { this.title = it }
@@ -40,4 +38,10 @@ data class Movie(
         movie.genres?.let { this.genres = it }
         movie.raw?.let { this.raw = it }
     }
+
+    class Colors(
+            val main: String = "",
+            val titleText: String = "",
+            val bodyText: String = ""
+    )
 }
