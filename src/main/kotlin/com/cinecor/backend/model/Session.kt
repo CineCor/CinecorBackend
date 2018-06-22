@@ -10,5 +10,5 @@ data class Session(
         var movieImage: String = ""
 ) {
 
-    enum class HoursType { NORMAL, VOSE, THREEDIM }
+    enum class Type { NORMAL, VOSE, THREEDIM, JUNIOR }
 }

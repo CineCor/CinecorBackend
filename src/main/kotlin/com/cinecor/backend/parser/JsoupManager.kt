@@ -45,12 +45,14 @@ object JsoupManager {
                         if (movieLink.isNotEmpty()) {
                             val movieId = movieLink.first().attr("abs:href").split("&id=").dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                             val title = movieLink.first().text()
-                            val hours = DateUtils.getFormattedDatesFromHoursText(movieElement.select("h5").text())
-                            val is3d = movieElement.select("h5").text().contains("3D")
-                            val isVose = movieElement.select("h5").text().contains("V.O.S.E")
+                            val rawHours = movieElement.select("h5").text()
+                            val hours = DateUtils.getFormattedDatesFromHoursText(rawHours)
+                            val is3d = rawHours.contains("3D")
+                            val isVose = rawHours.contains("V.O.S.E")
+                            val isJunior = rawHours.contains("Junior")
                             val url = movieLink.first().attr("abs:href")
 
-                            billboard.sessions.add(date, cinemaId, movieId, is3d, isVose, hours)
+                            billboard.sessions.add(date, cinemaId, movieId, is3d, isVose, isJunior, hours)
                             billboard.movies.add(movieId, title, url)
                         }
                     }
@@ -110,23 +112,20 @@ object JsoupManager {
     private fun MutableSet<Movie>.add(movieId: String, title: String, url: String) =
             add(Movie(movieId, title, url))
 
-    private fun MutableSet<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, hours: List<String>) {
-        if (hours.isNotEmpty()) {
-            val sessionTime = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(time)
-            val sessionId = sessionTime.plus(cinemaId).plus(movieId)
-            val key = when {
-                is3d -> Session.HoursType.THREEDIM.toString()
-                isVose -> Session.HoursType.VOSE.toString()
-                else -> Session.HoursType.NORMAL.toString()
-            }
+    private fun MutableSet<Session>.add(time: ZonedDateTime, cinemaId: String, movieId: String, is3d: Boolean, isVose: Boolean, isJunior: Boolean, hours: List<String>) {
+        if (hours.isEmpty()) return
 
-            val foundSession = find { it.id == sessionId }
-            if (foundSession != null) {
-                foundSession.hours.put(key, hours)
-            } else {
-                add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(key, hours))))
-            }
+        val sessionTime = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(time)
+        val sessionId = sessionTime.plus(cinemaId).plus(movieId)
+        val sessionType = when {
+            is3d -> Session.Type.THREEDIM
+            isVose -> Session.Type.VOSE
+            isJunior -> Session.Type.JUNIOR
+            else -> Session.Type.NORMAL
         }
+
+        find { it.id == sessionId }?.hours?.put(sessionType.name, hours)
+                ?: add(Session(sessionId, cinemaId, movieId, sessionTime, hashMapOf(Pair(sessionType.name, hours))))
     }
 
     private fun String.clean() = Regex("[^A-Za-z0-9 ]").replace(this.trim(), "")

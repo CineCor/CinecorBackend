@@ -30,9 +30,9 @@ object TmdbManager {
         }
 
         billboardData.sessions.forEach { session ->
-            billboardData.movies.find { it.id == session.movieId }?.let {
-                session.movieTitle = it.title
-                session.movieImage = it.imageBackdrop ?: it.imagePoster
+            billboardData.movies.find { it.id == session.movieId }?.let { movie ->
+                session.movieTitle = movie.title
+                session.movieImage = movie.imageBackdrop ?: movie.imagePoster
             }
         }
     }
