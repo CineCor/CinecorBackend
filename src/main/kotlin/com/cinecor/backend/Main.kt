@@ -17,6 +17,11 @@ object Main {
         println("### Initializing Firebase")
         FirebaseManager.init()
 
+        if (NOW.dayOfMonth == 1) {
+            println("### Clearing old data")
+            FirebaseManager.clearData()
+        }
+
         println("### Parsing movies")
         val billboardData = JsoupManager.parseBillboard()
 

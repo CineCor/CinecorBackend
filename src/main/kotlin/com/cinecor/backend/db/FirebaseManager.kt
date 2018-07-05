@@ -1,12 +1,8 @@
 package com.cinecor.backend.db
 
-import com.cinecor.backend.Main.NOW
 import com.cinecor.backend.model.Billboard
 import com.cinecor.backend.model.Movie
-import com.cinecor.backend.model.Session
-import com.cinecor.backend.utils.DateUtils
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.SetOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -37,34 +33,25 @@ object FirebaseManager {
 
     fun uploadBillboard(billboardData: Billboard) {
         val firestoreDb = FirestoreClient.getFirestore()
-        val firebaseBucket = StorageClient.getInstance().bucket()
 
-        val batch = firestoreDb.batch()
         val cinemas = firestoreDb.collection(COLLECTION_CINEMAS)
         val movies = firestoreDb.collection(COLLECTION_MOVIES)
         val sessions = firestoreDb.collection(COLLECTION_SESSIONS)
 
-        billboardData.cinemas.forEach {
-            batch.set(cinemas.document(it.id), it, SetOptions.mergeFields("id", "name"))
+        val batch = firestoreDb.batch()
+
+        billboardData.cinemas.forEach { cinema ->
+            batch.set(cinemas.document(cinema.id), cinema, SetOptions.mergeFields("id", "name"))
         }
 
         billboardData.movies.forEach { movie ->
             batch.set(movies.document(movie.id), movie)
         }
 
-        val earlierSessionId = DateUtils.DATE_FORMAT_FULL_SIMPLE.format(NOW).plus("00000")
-        sessions.whereLessThan("id", earlierSessionId).get().get().documents
-                .map { it as DocumentSnapshot }
-                .forEach { document ->
-                    batch.delete(document.reference)
-                    document.toObject(Session::class.java)?.movieId?.let { movieId ->
-                        firebaseBucket.get("movies/$movieId/poster.jpg")?.delete()
-                        firebaseBucket.get("movies/$movieId/backdrop.jpg")?.delete()
-                    }
-                }
-
-        billboardData.sessions.forEach {
-            batch.set(sessions.document(it.id), it)
+        billboardData.sessions.map { it.date }.forEach { date ->
+            billboardData.sessions.filter { it.date == date }.forEach { session ->
+                batch.set(sessions.document(date).collection(session.cinemaId).document(session.movieId), session)
+            }
         }
 
         batch.commit().get()
@@ -88,6 +75,18 @@ object FirebaseManager {
     }
 
     fun getRemoteMovies() =
-            FirestoreClient.getFirestore().collection(COLLECTION_MOVIES).get().get()
-                    .documents.map { it.toObject(Movie::class.java) }
+            FirestoreClient.getFirestore().collection(COLLECTION_MOVIES).get().get().documents.map { it.toObject(Movie::class.java) }
+
+    fun clearData() {
+        val firestoreDb = FirestoreClient.getFirestore()
+        val firebaseBucket = StorageClient.getInstance().bucket()
+
+        val batch = firestoreDb.batch()
+        firestoreDb.collection(COLLECTION_CINEMAS).get().get().documents.forEach { batch.delete(it.reference) }
+        firestoreDb.collection(COLLECTION_MOVIES).get().get().documents.forEach { batch.delete(it.reference) }
+        firestoreDb.collection(COLLECTION_SESSIONS).get().get().documents.forEach { batch.delete(it.reference) }
+        batch.commit().get()
+
+        firebaseBucket.list().iterateAll().filter { it.blobId.name.contains("movies") }.forEach { it.delete() }
+    }
 }
